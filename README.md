@@ -1,5 +1,5 @@
 
-# EXAMEN de cómputo matricial equipo Jacobi, Gauss-Seidel
+# Examen de cómputo matricial equipo Jacobi, Gauss-Seidel
 
 El equipo creado por el prof se subdivide en tres grupos: grupo de programación, grupo de revisión y una persona project manager. Esta división está inspirada en el *framework* [scrum](https://www.youtube.com/watch?v=b02ZkndLk1Y&feature=emb_logo) en un ambiente laboral real (y en esta práctica estaremos simplificando tal *framework*).  
 
