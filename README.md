@@ -39,7 +39,7 @@ Otras referencias útiles:
 * Cada equipo y persona obtendrán una calificación. Para el equipo consideraré que los métodos obtengan correctamente los resultados y vale 70%. Para la calificación individual calificaré de acuerdo a sus commits, *issues*, *milestones* o tarjetas creadas y vale 30%.
 
 
-## Lenguaje a utilizar: <Python o R, decidido por el prof>
+## Lenguaje a utilizar: R
 
 
 ## % de la calificación final: 20 puntos
