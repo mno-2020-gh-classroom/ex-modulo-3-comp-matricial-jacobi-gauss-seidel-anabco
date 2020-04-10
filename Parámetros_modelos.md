@@ -1,4 +1,4 @@
-# Método de Jacobi
+# Método de Jacobi y Gauss Seidel 
 
 En el modelo se deben considerar los siguientes parámetros: 
 
@@ -10,4 +10,6 @@ En el modelo se deben considerar los siguientes parámetros:
 - Máximo número de iteraciones
 
 **Salida**
-- Aproximación de la solución o alguno de los mensajes que se describen en la nota. 
+- Aproximación de la solución o alguno de los mensajes siguientes: 
+...+"procedimiento exitoso. El error entre iteraciones es de: ... "
+...+"máximo número de iteraciones alcanzadas"
