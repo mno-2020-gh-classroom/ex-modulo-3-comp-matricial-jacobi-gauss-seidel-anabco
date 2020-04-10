@@ -11,5 +11,7 @@ En el modelo se deben considerar los siguientes parámetros:
 
 **Salida**
 - Aproximación de la solución o alguno de los mensajes siguientes: 
-...+"procedimiento exitoso. El error entre iteraciones es de: ... "
-...+"máximo número de iteraciones alcanzadas"
+   
+   * "procedimiento exitoso. El error entre iteraciones es de: ... "
+
+   * "máximo número de iteraciones alcanzadas"
