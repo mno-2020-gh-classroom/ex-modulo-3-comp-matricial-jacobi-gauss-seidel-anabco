@@ -1,6 +1,7 @@
 # Método de Jacobi
 
 En el modelo se deben considerar los siguientes parámetros: 
+
  **Entrada**
 - Número de ecuaciones e incógnitas
 - Martriz A y vector lado derecho $b$
