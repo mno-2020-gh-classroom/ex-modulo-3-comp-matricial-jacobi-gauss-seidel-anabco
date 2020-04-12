@@ -3,7 +3,58 @@
 # Esto se logra mediante un proceso iterativo.
 # En esta primer versión, el número de iteraciones es fijo
 
+# Instalación de librerías y paqueterías auxiliares
+install.packages('pracma', repos = "http://cran.us.r-project.org")
+library('pracma')
+
 ########################## Declaración de funciones ##########################
+
+funcEsVectorValido <- function(mtrx, vct){
+
+  # El vector b, debe tener la misma cantidad de filas que la matriz
+  bool_VectorValido = FALSE
+  if (nrow(mtrx) == length(vct)){
+    bool_VectorValido = TRUE
+  }
+
+  bool_VectorValido
+
+}
+
+# Valida que sea cuadrada la matriz
+funcEsMatrizCuadrada <- function(mtrx){
+
+  # Si el número de filas es igual al número de columnas, es una matriz cuadrada
+  if (nrow(mtrx)==ncol(mtrx)){
+    bool_Valida <- TRUE
+  }
+  else{
+    bool_Valida <- FALSE
+  }
+
+  bool_Valida
+
+}
+
+ # Busca algún cero en la diagonal principal
+funcHayCeroEnDiagonal <- function(mtrx){
+
+  bool_HayCero <- FALSE
+  nbr_Filas <- nrow(mtrx)
+  nbr_Cols <- ncol(mtrx)
+
+  for (i in 1:nbr_Filas){
+    for (j in 1:nbr_Cols){
+      if ((i==j) && (mtrx[i,j]==0)){
+        bool_HayCero <- TRUE
+      }
+    }
+  }
+
+  bool_HayCero
+
+}
+
 # Función que obtiene cada componente del vector
 funcObtenerComponente <- function(i, n, mtrx_A, vct_X, vct_B){
 
@@ -73,22 +124,160 @@ funcObtenerVctRslt <- function(nbr_MaxIteraciones, n, mtrx_A, vct_B, vct_X0){
 
 }
 
+funcInterCambiarFilasVct <- function(vctOrigen, nbr_FilaOrigen, nbr_FilaDestino){
+
+  # Se guarda el valor destino
+  nbr_ValorTmp <- vctOrigen[nbr_FilaDestino]
+
+  # Se pone el valor origen hacia el valor destino
+  vctOrigen[nbr_FilaDestino] <- vctOrigen[nbr_FilaOrigen]
+
+  # Se recupera el valor destino original, y se pone en valor origen
+  vctOrigen[nbr_FilaOrigen] <- nbr_ValorTmp
+
+  # Se regresa el valor
+  vctOrigen
+
+}
+
+funcInterCambiarFilasMtrx <- function(mtrx, nbr_FilaOrigen, nbr_FilaDestino, nbr_Cols){
+
+  # Se guarda el valor destino
+  vct_FilaTmp <- mtrx[nbr_FilaDestino,1:nbr_Cols]
+
+  # Se pone el valor origen hacia el valor destino
+  mtrx[nbr_FilaDestino,1:nbr_Cols] <- mtrx[nbr_FilaOrigen,1:nbr_Cols]
+
+  # Se recupera el valor destino original, y se pone en valor origen
+  mtrx[nbr_FilaOrigen,1:nbr_Cols] <- vct_FilaTmp
+
+  # Se regresa el valor
+  mtrx
+
+}
+
+funcOrdenarEcuaciones <- function(mtrx_A, vct_B){
+
+  # Variables que se usan dentro de la funcion
+  nbr_Filas <- nrow(mtrx_A)
+  nbr_Cols <- ncol(mtrx_A)
+
+  # Se barren todas las columnas (iterador j)
+  for (j in 1:nbr_Cols){
+    # print('Inicia iteracion')
+
+    # Se saca el vector-columna que se usará esta iteración
+    vct_Col = mtrx_A[1:nbr_Cols,j]
+
+    # Mostramos el vector-columna con el que trabajaremos
+    # print(vct_Col)
+
+    # Se obtiene la norma infinita del vector-columna
+    nbr_Norm = Norm(vct_Col, p = Inf)
+    # print(nbr_Norm)
+
+    # Se pregunta si el valor es único en el vector-columna
+    vct_OrdDesc <- sort(vct_Col, decreasing = TRUE)
+    # print(vct_OrdDesc)
+
+    # Si sí es único:
+    if (vct_OrdDesc[1] != vct_OrdDesc[2]){
+      #print('Es unico')
+      # Se obtiene el índice donde está ese valor
+      nbr_Index <- match(nbr_Norm,vct_Col)
+      # print(nbr_Index)
+
+      # Para realizar el intercambio de filas, nuestra
+      # fila origen será: nbr_Index, y la fila destino: j
+      mtrx_A <- funcInterCambiarFilas(mtrx_A, nbr_Index, j, nbr_Cols)
+      vct_B <- funcInterCambiarFilasVct(vct_B, nbr_Index, j)
+
+      # print(mtrx_A)
+
+    } else { # Si no es único:
+      #print('Hay empate')
+
+      vct_Bool1 <- (vct_Col==nbr_Norm)
+
+      mtrx_Tmp <- mtrx_A[vct_Bool1,1:nbr_Cols]
+      #print(mtrx_Tmp)
+
+      # Barremos el resto de las columans para el desempate
+      for (jj in (j+1):nbr_Cols){
+
+        vct_ColDesempate <- mtrx_Tmp[,jj]
+        # print(paste0('vct_ColDesempate: ', vct_ColDesempate))
+
+        # Buscaremos el valor mínimo de la siguiente columna
+        vct_OrdAsc <- sort(vct_ColDesempate)
+        # print(vct_OrdAsc)
+
+        # Si el  mínimo es único:
+        if (vct_OrdAsc[1] != vct_OrdAsc[2]){
+
+          # print('es unico')
+          # Generamos el vector que nos ayudará a obtener las filas a desempatar
+          vct_Bool2 <- (vct_ColDesempate == vct_OrdAsc[1])
+          # print(vct_Bool2)
+
+          vct_FilaDesempate <- mtrx_Tmp[vct_Bool2]
+
+          # Ya que se tiene la fila mínima del empate, se obtiene su indice
+          # en la matriz_A
+          vct_Bool3 <- rowSums(mtrx_A == vct_FilaDesempate[col(mtrx_A)]) == ncol(mtrx_A)
+          nbr_Index <- match(TRUE,vct_Bool3)
+
+          # Para realizar el intercambio de filas, nuestra
+          # fila origen será: nbr_Index, y la fila destino: j
+          mtrx_A <- funcInterCambiarFilas(mtrx_A, nbr_Index, j, nbr_Cols)
+          vct_B <- funcInterCambiarFilasVct(vct_B, nbr_Index, j)
+
+          #print(mtrx_A)
+          break
+
+        }
+
+      }
+
+    }
+
+  }
+
+  # Regresamos en una lista, la matriz y vector ordenados
+  list(matriz=mtrx_A,vector=vct_B)
+
+}
+
+
 ########################## Declaración de variables ##########################
 
 # Construcción de los objetos matemáticos
+
+# Ejemplo de Erick (en desorden)
 # Matriz A
-mtrx_A <- matrix(c(10,-1,2,0,
+mtrx_A <- matrix(c( 0,3,-1,8,
                    -1,11,-1,3,
                     2,-1,10,-1,
-                     0,3,-1,8),
+                    10,-1,2,0),
+                 byrow = TRUE,
                  nrow=4,
                  ncol=4)
 
-# Vector b
-vct_B <- c(6, 25, -11, 15)
+vct_B <- c(15, 25, -11, 6)
+#vct_B <- c(6, 25, -11, 15)
 
-# N
-n <- 4
+# Ejemplo que puso Ana en el chat
+# Matriz A
+# mtrx_A <- matrix(c(1,0,0,0,
+#                   0,1,2,1,
+#                   1,2,0,0,
+#                   1,1,1,0),
+#                   nrow=4,
+#                   ncol=4,
+#                  byrow = TRUE)
+
+# Vector b
+# vct_B <- c(10, 24, 31, 45)
 
 # Vector de aproximación inicial
 vct_X0 <- c(0,0,0,0)
@@ -104,9 +293,59 @@ print(mtrx_A)
 print('Vector b:')
 print(vct_B)
 
-# Se manda a llamar la función que obtendrá la aproximación
-vct_XRslt <- funcObtenerVctRslt(nbr_MaxIteraciones, n, mtrx_A, vct_B, vct_X0)
+# Se aplican las validaciones de manera anidada
+if (funcEsVectorValido(mtrx_A, vct_B)){
 
-# Se imprime el resultado
-print('Resultado final: ')
-print(vct_XRslt)
+  if (funcEsVectorValido(mtrx_A, vct_X0)){
+
+    if (funcEsMatrizCuadrada(mtrx_A) == TRUE){
+
+      # Obtenemos la n de la matriz
+      n <- nrow(mtrx_A)
+
+      if (funcHayCeroEnDiagonal(mtrx_A) == FALSE){
+
+        # Se manda a llamar la función que obtendrá la aproximación
+        vct_XRslt <- funcObtenerVctRslt(nbr_MaxIteraciones, n, mtrx_A, vct_B, vct_X0)
+
+        # Se imprime el resultado
+        print('Resultado final: ')
+        print(vct_XRslt)
+
+      } else {
+        print('La matriz tiene algun cero en la diagonal, comienza ordenamiento')
+
+        lt_Obj <- funcOrdenarEcuaciones(mtrx_A, vct_B)
+        mtrx_A <- lt_Obj$matriz
+        vct_B <- lt_Obj$vector
+
+        print('Matriz ordenada:')
+        print(mtrx_A)
+
+        print('Vector ordenado:')
+        print(vct_B)
+
+        if (funcHayCeroEnDiagonal(mtrx_A) == FALSE){
+
+          # Se manda a llamar la función que obtendrá la aproximación
+          vct_XRslt <- funcObtenerVctRslt(nbr_MaxIteraciones, n, mtrx_A, vct_B, vct_X0)
+
+          # Se imprime el resultado
+          print('Resultado final: ')
+          print(vct_XRslt)
+
+        } else {
+          print('Pese al reordenamiento, aun hay ceros en la diagonal')
+        }
+
+      }
+
+    } else {
+        print('La matriz no cumple con ser de dimensiones nxn')
+    }
+  } else {
+    print('El vector de aproximaciones, debe tener la misma cantidad de filas que la matriz a evaluar')
+  }
+} else {
+  print('El vector de resultados, debe tener la misma cantidad de filas que la matriz a evaluar')
+}
