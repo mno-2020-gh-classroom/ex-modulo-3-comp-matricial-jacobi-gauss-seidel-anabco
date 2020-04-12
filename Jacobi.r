@@ -189,7 +189,7 @@ funcOrdenarEcuaciones <- function(mtrx_A, vct_B){
 
       # Para realizar el intercambio de filas, nuestra
       # fila origen será: nbr_Index, y la fila destino: j
-      mtrx_A <- funcInterCambiarFilas(mtrx_A, nbr_Index, j, nbr_Cols)
+      mtrx_A <- funcInterCambiarFilasMtrx(mtrx_A, nbr_Index, j, nbr_Cols)
       vct_B <- funcInterCambiarFilasVct(vct_B, nbr_Index, j)
 
       # print(mtrx_A)
@@ -229,7 +229,7 @@ funcOrdenarEcuaciones <- function(mtrx_A, vct_B){
 
           # Para realizar el intercambio de filas, nuestra
           # fila origen será: nbr_Index, y la fila destino: j
-          mtrx_A <- funcInterCambiarFilas(mtrx_A, nbr_Index, j, nbr_Cols)
+          mtrx_A <- funcInterCambiarFilasMtrx(mtrx_A, nbr_Index, j, nbr_Cols)
           vct_B <- funcInterCambiarFilasVct(vct_B, nbr_Index, j)
 
           #print(mtrx_A)
