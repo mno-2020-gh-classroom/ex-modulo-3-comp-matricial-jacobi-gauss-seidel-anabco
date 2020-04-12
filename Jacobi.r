@@ -248,6 +248,72 @@ funcOrdenarEcuaciones <- function(mtrx_A, vct_B){
 
 }
 
+funcMetodoJacobi <- function(mtrx_A, vct_B, vct_X0, nbr_MaxIteraciones){
+
+  print('Matriz A:')
+  print(mtrx_A)
+
+  print('Vector b:')
+  print(vct_B)
+
+  # Se aplican las validaciones de manera anidada
+  if (funcEsVectorValido(mtrx_A, vct_B)){
+
+    if (funcEsVectorValido(mtrx_A, vct_X0)){
+
+      if (funcEsMatrizCuadrada(mtrx_A) == TRUE){
+
+        # Obtenemos la n de la matriz
+        n <- nrow(mtrx_A)
+
+        if (funcHayCeroEnDiagonal(mtrx_A) == FALSE){
+
+          # Se manda a llamar la función que obtendrá la aproximación
+          vct_XRslt <- funcObtenerVctRslt(nbr_MaxIteraciones, n, mtrx_A, vct_B, vct_X0)
+
+          # Se imprime el resultado
+          print('Resultado final: ')
+          print(vct_XRslt)
+
+        } else {
+          print('La matriz tiene algun cero en la diagonal, comienza ordenamiento')
+
+          lt_Obj <- funcOrdenarEcuaciones(mtrx_A, vct_B)
+          mtrx_A <- lt_Obj$matriz
+          vct_B <- lt_Obj$vector
+
+          print('Matriz ordenada:')
+          print(mtrx_A)
+
+          print('Vector ordenado:')
+          print(vct_B)
+
+          if (funcHayCeroEnDiagonal(mtrx_A) == FALSE){
+
+            # Se manda a llamar la función que obtendrá la aproximación
+            vct_XRslt <- funcObtenerVctRslt(nbr_MaxIteraciones, n, mtrx_A, vct_B, vct_X0)
+
+            # Se imprime el resultado
+            print('Resultado final: ')
+            print(vct_XRslt)
+
+          } else {
+            print('Pese al reordenamiento, aun hay ceros en la diagonal')
+          }
+
+        }
+
+      } else {
+          print('La matriz no cumple con ser de dimensiones nxn')
+      }
+    } else {
+      print('El vector de aproximaciones, debe tener la misma cantidad de filas que la matriz a evaluar')
+    }
+  } else {
+    print('El vector de resultados, debe tener la misma cantidad de filas que la matriz a evaluar')
+  }
+}
+
 
 ########################## Declaración de variables ##########################
 
@@ -287,65 +353,6 @@ nbr_MaxIteraciones <- 10
 
 ########################## Flujo principal ##########################
 
-print('Matriz A:')
-print(mtrx_A)
-
-print('Vector b:')
-print(vct_B)
-
-# Se aplican las validaciones de manera anidada
-if (funcEsVectorValido(mtrx_A, vct_B)){
-
-  if (funcEsVectorValido(mtrx_A, vct_X0)){
-
-    if (funcEsMatrizCuadrada(mtrx_A) == TRUE){
-
-      # Obtenemos la n de la matriz
-      n <- nrow(mtrx_A)
-
-      if (funcHayCeroEnDiagonal(mtrx_A) == FALSE){
-
-        # Se manda a llamar la función que obtendrá la aproximación
-        vct_XRslt <- funcObtenerVctRslt(nbr_MaxIteraciones, n, mtrx_A, vct_B, vct_X0)
-
-        # Se imprime el resultado
-        print('Resultado final: ')
-        print(vct_XRslt)
-
-      } else {
-        print('La matriz tiene algun cero en la diagonal, comienza ordenamiento')
-
-        lt_Obj <- funcOrdenarEcuaciones(mtrx_A, vct_B)
-        mtrx_A <- lt_Obj$matriz
-        vct_B <- lt_Obj$vector
-
-        print('Matriz ordenada:')
-        print(mtrx_A)
-
-        print('Vector ordenado:')
-        print(vct_B)
-
-        if (funcHayCeroEnDiagonal(mtrx_A) == FALSE){
-
-          # Se manda a llamar la función que obtendrá la aproximación
-          vct_XRslt <- funcObtenerVctRslt(nbr_MaxIteraciones, n, mtrx_A, vct_B, vct_X0)
-
-          # Se imprime el resultado
-          print('Resultado final: ')
-          print(vct_XRslt)
-
-        } else {
-          print('Pese al reordenamiento, aun hay ceros en la diagonal')
-        }
-
-      }
-
-    } else {
-        print('La matriz no cumple con ser de dimensiones nxn')
-    }
-  } else {
-    print('El vector de aproximaciones, debe tener la misma cantidad de filas que la matriz a evaluar')
-  }
-} else {
-  print('El vector de resultados, debe tener la misma cantidad de filas que la matriz a evaluar')
-}
+# Se manda a llamar la función que contiene las validaciones y ejecución
+# del método de Jacobi
+funcMetodoJacobi(mtrx_A, vct_B, vct_X0, nbr_MaxIteraciones)
