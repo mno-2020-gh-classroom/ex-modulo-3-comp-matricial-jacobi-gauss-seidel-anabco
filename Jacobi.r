@@ -91,7 +91,7 @@ funcObtenerComponente <- function(i, n, mtrx_A, vct_X, vct_B){
 }
 
 # Función que obtiene la aproximación de las iteraciones
-funcObtenerVctRslt <- function(nbr_MaxIteraciones, n, mtrx_A, vct_B, vct_X0){
+funcObtenerVctRslt <- function(nbr_MaxIteraciones, n, mtrx_A, vct_B, vct_X0, nbr_Threshold){
 
   # Inicializamos los vectores de control
   vct_X_Act <- vct_X0
@@ -104,19 +104,38 @@ funcObtenerVctRslt <- function(nbr_MaxIteraciones, n, mtrx_A, vct_B, vct_X0){
   # Máximo número de iteraciones
   for (it in 1:nbr_MaxIteraciones){
 
+    print(paste0('Iteracion ', it))
+
     # Iteraciones para obtener cada componente del vector de resultados
     for (i in 1:n){
       vct_X_Act[i]=funcObtenerComponente(i, n, mtrx_A, vct_X_Ant, vct_B)
+    }
+
+    print(vct_X_Act)
+
+    nbr_Numerador <- Norm(vct_X_Act - vct_X_Ant, p = Inf)
+    nbr_Denominador <- Norm(vct_X_Act, p = Inf)
+
+    print(paste0('nbr_Numerador: ', nbr_Numerador))
+    print(paste0('nbr_Denominador: ', nbr_Denominador))
+
+    nbr_Diff <-  nbr_Numerador / nbr_Denominador
+    print(paste0('nbr_Diff: ',nbr_Diff))
+
+    # Si se llega a una diferencia menor al threshold indicado, salimos del for
+    if (nbr_Diff<nbr_Threshold){
+      print('Se alcanza el threshold')
+      break
     }
 
     # El vector resultado (k), lo usamos como vector anterior (k-1) para la sigueinte
     # iteraación
     vct_X_Ant <- vct_X_Act
 
-    # Los siguientes prints son para debuguear, más adelante se eliminarán
-    print(paste0('Iteracion ', it))
-    print(vct_X_Act)
+  }
 
+  if (it==nbr_MaxIteraciones){
+    print('Se llega al tope de iteraciones')
   }
 
   # Devolvemos el último vector calculado
@@ -248,7 +267,7 @@ funcOrdenarEcuaciones <- function(mtrx_A, vct_B){
 
 }
 
-funcMetodoJacobi <- function(mtrx_A, vct_B, vct_X0, nbr_MaxIteraciones){
+funcMetodoJacobi <- function(mtrx_A, vct_B, vct_X0, nbr_MaxIteraciones, nbr_Threshold){
 
   print('Matriz A:')
   print(mtrx_A)
@@ -269,7 +288,7 @@ funcMetodoJacobi <- function(mtrx_A, vct_B, vct_X0, nbr_MaxIteraciones){
         if (funcHayCeroEnDiagonal(mtrx_A) == FALSE){
 
           # Se manda a llamar la función que obtendrá la aproximación
-          vct_XRslt <- funcObtenerVctRslt(nbr_MaxIteraciones, n, mtrx_A, vct_B, vct_X0)
+          vct_XRslt <- funcObtenerVctRslt(nbr_MaxIteraciones, n, mtrx_A, vct_B, vct_X0, nbr_Threshold)
 
           # Se imprime el resultado
           print('Resultado final: ')
@@ -291,7 +310,7 @@ funcMetodoJacobi <- function(mtrx_A, vct_B, vct_X0, nbr_MaxIteraciones){
           if (funcHayCeroEnDiagonal(mtrx_A) == FALSE){
 
             # Se manda a llamar la función que obtendrá la aproximación
-            vct_XRslt <- funcObtenerVctRslt(nbr_MaxIteraciones, n, mtrx_A, vct_B, vct_X0)
+            vct_XRslt <- funcObtenerVctRslt(nbr_MaxIteraciones, n, mtrx_A, vct_B, vct_X0, nbr_Threshold)
 
             # Se imprime el resultado
             print('Resultado final: ')
@@ -349,10 +368,13 @@ vct_B <- c(15, 25, -11, 6)
 vct_X0 <- c(0,0,0,0)
 
 # Máximo número de iteraciones permitido
-nbr_MaxIteraciones <- 10
+nbr_MaxIteraciones <- 100
+
+# Threshold que se busca alcanzar
+nbr_Threshold <- 10**(-3)
 
 ########################## Flujo principal ##########################
 
 # Se manda a llamar la función que contiene las validaciones y ejecución
 # del método de Jacobi
-funcMetodoJacobi(mtrx_A, vct_B, vct_X0, nbr_MaxIteraciones)
+funcMetodoJacobi(mtrx_A, vct_B, vct_X0, nbr_MaxIteraciones, nbr_Threshold)
