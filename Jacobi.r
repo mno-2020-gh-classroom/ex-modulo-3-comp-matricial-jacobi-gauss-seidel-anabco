@@ -1,7 +1,10 @@
 ########################## Información general ##########################
-# El método Jacobi permite resolver sistemas de ecuaciones del tipo Ax=b.
+# Los métodos de Jacobi y Gauss_Seidel, permiten resolver
+# sistemas de ecuaciones del tipo Ax=b.
 # Esto se logra mediante un proceso iterativo.
-# En esta primer versión, el número de iteraciones es fijo
+# El proceso va a iterar hasta que la diferencia entre el vector de resultados
+# de la iteración actual y el vector de resultados de la iteración anterior,
+# sea menor a un threshold dado o que se alcance el tope de iteraciones.
 
 # Instalación de librerías y paqueterías auxiliares
 install.packages('pracma', repos = "http://cran.us.r-project.org")
@@ -91,7 +94,7 @@ funcObtenerComponente <- function(i, n, mtrx_A, vct_X, vct_B){
 }
 
 # Función que obtiene la aproximación de las iteraciones
-funcObtenerVctRslt <- function(nbr_MaxIteraciones, n, mtrx_A, vct_B, vct_X0, nbr_Threshold){
+funcObtenerVctRslt <- function(nbr_MaxIteraciones, n, mtrx_A, vct_B, vct_X0, nbr_Threshold, str_Metodo){
 
   # Inicializamos los vectores de control
   vct_X_Act <- vct_X0
@@ -108,7 +111,17 @@ funcObtenerVctRslt <- function(nbr_MaxIteraciones, n, mtrx_A, vct_B, vct_X0, nbr
 
     # Iteraciones para obtener cada componente del vector de resultados
     for (i in 1:n){
-      vct_X_Act[i]=funcObtenerComponente(i, n, mtrx_A, vct_X_Ant, vct_B)
+
+      # Si se pidió usar el método Jacobi
+      if (str_Metodo=='J'){
+        vct_X_Act[i]=funcObtenerComponente(i, n, mtrx_A, vct_X_Ant, vct_B)
+      }
+
+      # Si se pidió usar el método Gauss-Seidel
+      if (str_Metodo=='GS'){
+        vct_X_Act[i]=funcObtenerComponente(i, n, mtrx_A, vct_X_Act, vct_B)
+      }
+
     }
 
     print(vct_X_Act)
@@ -267,69 +280,82 @@ funcOrdenarEcuaciones <- function(mtrx_A, vct_B){
 
 }
 
-funcMetodoJacobi <- function(mtrx_A, vct_B, vct_X0, nbr_MaxIteraciones, nbr_Threshold){
+funcResolverSE <- function(mtrx_A, vct_B, vct_X0, nbr_MaxIteraciones, nbr_Threshold, str_Metodo){
 
-  print('Matriz A:')
-  print(mtrx_A)
+  if (str_Metodo == 'J' || str_Metodo == 'GS'){
 
-  print('Vector b:')
-  print(vct_B)
+    if (str_Metodo=='J'){
+      print('Solucion mediante metodo de Jacobi')
+    }
+    if (str_Metodo=='GS'){
+      print('Solucion mediante metodo de Gauss-Sidel')
+    }
 
-  # Se aplican las validaciones de manera anidada
-  if (funcEsVectorValido(mtrx_A, vct_B)){
+    print('Matriz A:')
+    print(mtrx_A)
 
-    if (funcEsVectorValido(mtrx_A, vct_X0)){
+    print('Vector b:')
+    print(vct_B)
 
-      if (funcEsMatrizCuadrada(mtrx_A) == TRUE){
+    # Se aplican las validaciones de manera anidada
+    if (funcEsVectorValido(mtrx_A, vct_B)){
 
-        # Obtenemos la n de la matriz
-        n <- nrow(mtrx_A)
+      if (funcEsVectorValido(mtrx_A, vct_X0)){
 
-        if (funcHayCeroEnDiagonal(mtrx_A) == FALSE){
+        if (funcEsMatrizCuadrada(mtrx_A) == TRUE){
 
-          # Se manda a llamar la función que obtendrá la aproximación
-          vct_XRslt <- funcObtenerVctRslt(nbr_MaxIteraciones, n, mtrx_A, vct_B, vct_X0, nbr_Threshold)
-
-          # Se imprime el resultado
-          print('Resultado final: ')
-          print(vct_XRslt)
-
-        } else {
-          print('La matriz tiene algun cero en la diagonal, comienza ordenamiento')
-
-          lt_Obj <- funcOrdenarEcuaciones(mtrx_A, vct_B)
-          mtrx_A <- lt_Obj$matriz
-          vct_B <- lt_Obj$vector
-
-          print('Matriz ordenada:')
-          print(mtrx_A)
-
-          print('Vector ordenado:')
-          print(vct_B)
+          # Obtenemos la n de la matriz
+          n <- nrow(mtrx_A)
 
           if (funcHayCeroEnDiagonal(mtrx_A) == FALSE){
 
             # Se manda a llamar la función que obtendrá la aproximación
-            vct_XRslt <- funcObtenerVctRslt(nbr_MaxIteraciones, n, mtrx_A, vct_B, vct_X0, nbr_Threshold)
+            vct_XRslt <- funcObtenerVctRslt(nbr_MaxIteraciones, n, mtrx_A, vct_B, vct_X0, nbr_Threshold, str_Metodo)
 
             # Se imprime el resultado
             print('Resultado final: ')
             print(vct_XRslt)
 
           } else {
-            print('Pese al reordenamiento, aun hay ceros en la diagonal')
+            print('La matriz tiene algun cero en la diagonal, comienza ordenamiento')
+
+            lt_Obj <- funcOrdenarEcuaciones(mtrx_A, vct_B)
+            mtrx_A <- lt_Obj$matriz
+            vct_B <- lt_Obj$vector
+
+            print('Matriz ordenada:')
+            print(mtrx_A)
+
+            print('Vector ordenado:')
+            print(vct_B)
+
+            if (funcHayCeroEnDiagonal(mtrx_A) == FALSE){
+
+              # Se manda a llamar la función que obtendrá la aproximación
+              vct_XRslt <- funcObtenerVctRslt(nbr_MaxIteraciones, n, mtrx_A, vct_B, vct_X0, nbr_Threshold, str_Metodo)
+
+              # Se imprime el resultado
+              print('Resultado final: ')
+              print(vct_XRslt)
+
+            } else {
+              print('Pese al reordenamiento, aun hay ceros en la diagonal')
+            }
+
           }
 
+        } else {
+            print('La matriz no cumple con ser de dimensiones nxn')
         }
-
       } else {
-          print('La matriz no cumple con ser de dimensiones nxn')
+        print('El vector de aproximaciones, debe tener la misma cantidad de filas que la matriz a evaluar')
       }
     } else {
-      print('El vector de aproximaciones, debe tener la misma cantidad de filas que la matriz a evaluar')
+      print('El vector de resultados, debe tener la misma cantidad de filas que la matriz a evaluar')
     }
-  } else {
-    print('El vector de resultados, debe tener la misma cantidad de filas que la matriz a evaluar')
+
+  }else{
+    print('El metodo especificado no es valido, favor de verificar')
   }
 }
 
@@ -373,8 +399,12 @@ nbr_MaxIteraciones <- 100
 # Threshold que se busca alcanzar
 nbr_Threshold <- 10**(-3)
 
+# Método a utilizar
+#str_Metodo <- 'J'
+str_Metodo <- 'GS'
+
 ########################## Flujo principal ##########################
 
 # Se manda a llamar la función que contiene las validaciones y ejecución
 # del método de Jacobi
-funcMetodoJacobi(mtrx_A, vct_B, vct_X0, nbr_MaxIteraciones, nbr_Threshold)
+funcResolverSE(mtrx_A, vct_B, vct_X0, nbr_MaxIteraciones, nbr_Threshold, str_Metodo)
