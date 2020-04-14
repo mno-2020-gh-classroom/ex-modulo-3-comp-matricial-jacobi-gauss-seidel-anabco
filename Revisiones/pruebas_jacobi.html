@@ -223,314 +223,9 @@ div.tocify {
 </div>
 
 
-<p>Cargamos las Funciones del Método Jacobi:</p>
-<pre class="r"><code>library('pracma')
-
-funcEsVectorValido &lt;- function(mtrx, vct){
-
-  # El vector b, debe tener la misma cantidad de filas que la matriz
-  bool_VectorValido = FALSE
-  if (nrow(mtrx) == length(vct)){
-    bool_VectorValido = TRUE
-  }
-
-  bool_VectorValido
-
-}
-
-# Valida que sea cuadrada la matriz
-funcEsMatrizCuadrada &lt;- function(mtrx){
-
-  # Si el número de filas es igual al número de columnas, es una matriz cuadrada
-  if (nrow(mtrx)==ncol(mtrx)){
-    bool_Valida &lt;- TRUE
-  }
-  else{
-    bool_Valida &lt;- FALSE
-  }
-
-  bool_Valida
-
-}
-
- # Busca algún cero en la diagonal principal
-funcHayCeroEnDiagonal &lt;- function(mtrx){
-
-  bool_HayCero &lt;- FALSE
-  nbr_Filas &lt;- nrow(mtrx)
-  nbr_Cols &lt;- ncol(mtrx)
-
-  for (i in 1:nbr_Filas){
-    for (j in 1:nbr_Cols){
-      if ((i==j) &amp;&amp; (mtrx[i,j]==0)){
-        bool_HayCero &lt;- TRUE
-      }
-    }
-  }
-
-  bool_HayCero
-
-}
-
-# Función que obtiene cada componente del vector
-funcObtenerComponente &lt;- function(i, n, mtrx_A, vct_X, vct_B){
-
-  # Variable en la cual acumularemos el resutlado de la sumatoria
-  nbr_Sumatoria = 0
-  nbr_Final = 0
-
-  # Variables con los términos agrupados de los elementos de la fórmula
-  nbr_Termino1 = 0
-  nbr_Termino2 = 0
-
-  # Sumatoria de j a n para toda j != i
-  for (j in 1:n){
-    if (j != i ){
-
-      # Operación de la sumatoria
-      nbr_Termino1 = (-(mtrx_A[i,j] * vct_X[j]) / (mtrx_A[i,i]))
-
-      # Acumulamos los valores
-      nbr_Sumatoria = nbr_Sumatoria + nbr_Termino1
-
-    }
-  }
-
-  # Terminada la sumatoria, se prepara un término extra
-  nbr_Termino2 = (vct_B[i] / mtrx_A[i,i])
-
-  # El resultado final, es lo acumulado de la sumatoria más el otro término
-  nbr_Final = nbr_Sumatoria + nbr_Termino2
-
-  # Regresamos el resultado
-  nbr_Final
-
-}
-
-# Función que obtiene la aproximación de las iteraciones
-funcObtenerVctRslt &lt;- function(nbr_MaxIteraciones, n, mtrx_A, vct_B, vct_X0){
-
-  # Inicializamos los vectores de control
-  vct_X_Act &lt;- vct_X0
-  vct_X_Ant &lt;- vct_X0
-
-  # Los siguientes prints son para debuguear, más adelante se eliminarán
-  print(paste0('Iteracion ', 0))
-  print(vct_X_Act)
-
-  # Máximo número de iteraciones
-  for (it in 1:nbr_MaxIteraciones){
-
-    # Iteraciones para obtener cada componente del vector de resultados
-    for (i in 1:n){
-      vct_X_Act[i]=funcObtenerComponente(i, n, mtrx_A, vct_X_Ant, vct_B)
-    }
-
-    # El vector resultado (k), lo usamos como vector anterior (k-1) para la sigueinte
-    # iteraación
-    vct_X_Ant &lt;- vct_X_Act
-
-    # Los siguientes prints son para debuguear, más adelante se eliminarán
-    print(paste0('Iteracion ', it))
-    print(vct_X_Act)
-
-  }
-
-  # Devolvemos el último vector calculado
-  vct_X_Act
-
-}
-
-funcInterCambiarFilasVct &lt;- function(vctOrigen, nbr_FilaOrigen, nbr_FilaDestino){
-
-  # Se guarda el valor destino
-  nbr_ValorTmp &lt;- vctOrigen[nbr_FilaDestino]
-
-  # Se pone el valor origen hacia el valor destino
-  vctOrigen[nbr_FilaDestino] &lt;- vctOrigen[nbr_FilaOrigen]
-
-  # Se recupera el valor destino original, y se pone en valor origen
-  vctOrigen[nbr_FilaOrigen] &lt;- nbr_ValorTmp
-
-  # Se regresa el valor
-  vctOrigen
-
-}
-
-funcInterCambiarFilasMtrx &lt;- function(mtrx, nbr_FilaOrigen, nbr_FilaDestino, nbr_Cols){
-
-  # Se guarda el valor destino
-  vct_FilaTmp &lt;- mtrx[nbr_FilaDestino,1:nbr_Cols]
-
-  # Se pone el valor origen hacia el valor destino
-  mtrx[nbr_FilaDestino,1:nbr_Cols] &lt;- mtrx[nbr_FilaOrigen,1:nbr_Cols]
-
-  # Se recupera el valor destino original, y se pone en valor origen
-  mtrx[nbr_FilaOrigen,1:nbr_Cols] &lt;- vct_FilaTmp
-
-  # Se regresa el valor
-  mtrx
-
-}
-
-funcOrdenarEcuaciones &lt;- function(mtrx_A, vct_B){
-
-  # Variables que se usan dentro de la funcion
-  nbr_Filas &lt;- nrow(mtrx_A)
-  nbr_Cols &lt;- ncol(mtrx_A)
-
-  # Se barren todas las columnas (iterador j)
-  for (j in 1:nbr_Cols){
-    # print('Inicia iteracion')
-
-    # Se saca el vector-columna que se usará esta iteración
-    vct_Col = mtrx_A[1:nbr_Cols,j]
-
-    # Mostramos el vector-columna con el que trabajaremos
-    # print(vct_Col)
-
-    # Se obtiene la norma infinita del vector-columna
-    nbr_Norm = Norm(vct_Col, p = Inf)
-    # print(nbr_Norm)
-
-    # Se pregunta si el valor es único en el vector-columna
-    vct_OrdDesc &lt;- sort(vct_Col, decreasing = TRUE)
-    # print(vct_OrdDesc)
-
-    # Si sí es único:
-    if (vct_OrdDesc[1] != vct_OrdDesc[2]){
-      #print('Es unico')
-      # Se obtiene el índice donde está ese valor
-      nbr_Index &lt;- match(nbr_Norm,vct_Col)
-      # print(nbr_Index)
-
-      # Para realizar el intercambio de filas, nuestra
-      # fila origen será: nbr_Index, y la fila destino: j
-      mtrx_A &lt;- funcInterCambiarFilasMtrx(mtrx_A, nbr_Index, j, nbr_Cols)
-      vct_B &lt;- funcInterCambiarFilasVct(vct_B, nbr_Index, j)
-
-      # print(mtrx_A)
-
-    } else { # Si no es único:
-      #print('Hay empate')
-
-      vct_Bool1 &lt;- (vct_Col==nbr_Norm)
-
-      mtrx_Tmp &lt;- mtrx_A[vct_Bool1,1:nbr_Cols]
-      #print(mtrx_Tmp)
-
-      # Barremos el resto de las columans para el desempate
-      for (jj in (j+1):nbr_Cols){
-
-        vct_ColDesempate &lt;- mtrx_Tmp[,jj]
-        # print(paste0('vct_ColDesempate: ', vct_ColDesempate))
-
-        # Buscaremos el valor mínimo de la siguiente columna
-        vct_OrdAsc &lt;- sort(vct_ColDesempate)
-        # print(vct_OrdAsc)
-
-        # Si el  mínimo es único:
-        if (vct_OrdAsc[1] != vct_OrdAsc[2]){
-
-          # print('es unico')
-          # Generamos el vector que nos ayudará a obtener las filas a desempatar
-          vct_Bool2 &lt;- (vct_ColDesempate == vct_OrdAsc[1])
-          # print(vct_Bool2)
-
-          vct_FilaDesempate &lt;- mtrx_Tmp[vct_Bool2]
-
-          # Ya que se tiene la fila mínima del empate, se obtiene su indice
-          # en la matriz_A
-          vct_Bool3 &lt;- rowSums(mtrx_A == vct_FilaDesempate[col(mtrx_A)]) == ncol(mtrx_A)
-          nbr_Index &lt;- match(TRUE,vct_Bool3)
-
-          # Para realizar el intercambio de filas, nuestra
-          # fila origen será: nbr_Index, y la fila destino: j
-          mtrx_A &lt;- funcInterCambiarFilasMtrx(mtrx_A, nbr_Index, j, nbr_Cols)
-          vct_B &lt;- funcInterCambiarFilasVct(vct_B, nbr_Index, j)
-
-          #print(mtrx_A)
-          break
-
-        }
-
-      }
-
-    }
-
-  }
-
-  # Regresamos en una lista, la matriz y vector ordenados
-  list(matriz=mtrx_A,vector=vct_B)
-
-}
-
-
-funcMetodoJacobi &lt;- function(mtrx_A, vct_B, vct_X0, nbr_MaxIteraciones){
-
-  print('Matriz A:')
-  print(mtrx_A)
-
-  print('Vector b:')
-  print(vct_B)
-
-  # Se aplican las validaciones de manera anidada
-  if (funcEsVectorValido(mtrx_A, vct_B)){
-
-    if (funcEsVectorValido(mtrx_A, vct_X0)){
-
-      if (funcEsMatrizCuadrada(mtrx_A) == TRUE){
-
-        # Obtenemos la n de la matriz
-        n &lt;- nrow(mtrx_A)
-
-        if (funcHayCeroEnDiagonal(mtrx_A) == FALSE){
-
-          # Se manda a llamar la función que obtendrá la aproximación
-          vct_XRslt &lt;- funcObtenerVctRslt(nbr_MaxIteraciones, n, mtrx_A, vct_B, vct_X0)
-
-          # Se imprime el resultado
-          print('Resultado final: ')
-          print(vct_XRslt)
-
-        } else {
-          print('La matriz tiene algun cero en la diagonal, comienza ordenamiento')
-
-          lt_Obj &lt;- funcOrdenarEcuaciones(mtrx_A, vct_B)
-          mtrx_A &lt;- lt_Obj$matriz
-          vct_B &lt;- lt_Obj$vector
-
-          print('Matriz ordenada:')
-          print(mtrx_A)
-
-          print('Vector ordenado:')
-          print(vct_B)
-
-          if (funcHayCeroEnDiagonal(mtrx_A) == FALSE){
-
-            # Se manda a llamar la función que obtendrá la aproximación
-            vct_XRslt &lt;- funcObtenerVctRslt(nbr_MaxIteraciones, n, mtrx_A, vct_B, vct_X0)
-
-            # Se imprime el resultado
-            print('Resultado final: ')
-            print(vct_XRslt)
-
-          } else {
-            print('Pese al reordenamiento, aun hay ceros en la diagonal')
-          }
-
-        }
-
-      } else {
-          print('La matriz no cumple con ser de dimensiones nxn')
-      }
-    } else {
-      print('El vector de aproximaciones, debe tener la misma cantidad de filas que la matriz a evaluar')
-    }
-  } else {
-    print('El vector de resultados, debe tener la misma cantidad de filas que la matriz a evaluar')
-  }
-}</code></pre>
+<div id="pruebas-con-primera-version" class="section level1">
+<h1>Pruebas con Primera Versión</h1>
+<p>En esta versión no se incluye aún el threshold como un criterio de paro del algoritmo, únicamente las iteraciones indican cuándo termina el algoritmo.</p>
 <div id="prueba-con-ejemplo-de-clase" class="section level2">
 <h2>Prueba con Ejemplo de Clase</h2>
 <p>La primera prueba es con la matriz ejemplo que se muestra en <a href="https://github.com/ITAM-DS/analisis-numerico-computo-cientifico/blob/master/temas/III.computo_matricial/3.3.e.Jacobi_Gauss-Seidel.ipynb" class="uri">https://github.com/ITAM-DS/analisis-numerico-computo-cientifico/blob/master/temas/III.computo_matricial/3.3.e.Jacobi_Gauss-Seidel.ipynb</a></p>
@@ -547,6 +242,7 @@ funcMetodoJacobi &lt;- function(mtrx_A, vct_B, vct_X0, nbr_MaxIteraciones){
 <pre><code>## [1] &quot;Máximo número de iteraciones:&quot;</code></pre>
 <pre><code>## [1] 10</code></pre>
 <p>Ejecutamos el método de Jacobi:</p>
+<pre class="r"><code>funcMetodoJacobi(mtrx_A, vct_B, vct_X0, nbr_MaxIteraciones)</code></pre>
 <pre><code>## [1] &quot;Matriz A:&quot;
 ##      [,1] [,2] [,3] [,4]
 ## [1,]    0    3   -1    8
@@ -866,62 +562,392 @@ sol.lsolve$x</code></pre>
 ## [1] &quot;El vector de aproximaciones, debe tener la misma cantidad de filas que la matriz a evaluar&quot;</code></pre>
 </div>
 </div>
-<div id="pruebas-sobre-matrices-genericas" class="section level2">
-<h2>Pruebas sobre Matrices Genéricas</h2>
+</div>
+<div id="pruebas-con-segunda-version" class="section level1">
+<h1>Pruebas con Segunda Versión</h1>
+<p>En esta versión se incluye el threshold como un criterio de paro del algoritmo.:</p>
+<div id="prueba-con-ejemplo-de-clase-1" class="section level2">
+<h2>Prueba con Ejemplo de Clase</h2>
+<p>Probamos nuevamente el ejemplo de clase, agregando ahora como parámetro el threshold. Declaramos un threshold pequeño para que el algoritmo pare a las 10 iteraciones y de esta forma se pueda comparar con el resultado obtenido en la primera versión:</p>
 <pre><code>## [1] &quot;Matriz A:&quot;</code></pre>
 <pre><code>##      [,1] [,2] [,3] [,4]
-## [1,]    1    0    0    0
-## [2,]    0    1    2    1
-## [3,]    1    2    0    0
-## [4,]    1    0    1    0</code></pre>
+## [1,]    0    3   -1    8
+## [2,]   -1   11   -1    3
+## [3,]    2   -1   10   -1
+## [4,]   10   -1    2    0</code></pre>
 <pre><code>## [1] &quot;Vector b:&quot;</code></pre>
 <pre><code>## [1]  15  25 -11   6</code></pre>
 <pre><code>## [1] &quot;Punto inicial:&quot;</code></pre>
 <pre><code>## [1] 0 0 0 0</code></pre>
 <pre><code>## [1] &quot;Máximo número de iteraciones:&quot;</code></pre>
 <pre><code>## [1] 10</code></pre>
-<p>El resultado es:</p>
-<pre><code>## [1] &quot;Matriz A:&quot;
+<pre><code>## [1] &quot;Threshold:&quot;</code></pre>
+<pre><code>## [1] 1e-10</code></pre>
+<p>Ejecutamos el método de Jacobi con esta nueva versión:</p>
+<pre class="r"><code>funcResolverSE(mtrx_A, vct_B, vct_X0, nbr_MaxIteraciones, nbr_Threshold, str_Metodo)</code></pre>
+<pre><code>## [1] &quot;Solucion mediante metodo de Jacobi&quot;
+## [1] &quot;Matriz A:&quot;
 ##      [,1] [,2] [,3] [,4]
-## [1,]    1    0    0    0
-## [2,]    0    1    2    1
-## [3,]    1    2    0    0
-## [4,]    1    0    1    0
+## [1,]    0    3   -1    8
+## [2,]   -1   11   -1    3
+## [3,]    2   -1   10   -1
+## [4,]   10   -1    2    0
 ## [1] &quot;Vector b:&quot;
 ## [1]  15  25 -11   6
 ## [1] &quot;La matriz tiene algun cero en la diagonal, comienza ordenamiento&quot;
 ## [1] &quot;Matriz ordenada:&quot;
 ##      [,1] [,2] [,3] [,4]
-## [1,]    1    0    0    0
-## [2,]    1    2    0    0
-## [3,]    1    0    1    0
-## [4,]    0    1    2    1
+## [1,]   10   -1    2    0
+## [2,]   -1   11   -1    3
+## [3,]    2   -1   10   -1
+## [4,]    0    3   -1    8
 ## [1] &quot;Vector ordenado:&quot;
-## [1]  15 -11   6  25
+## [1]   6  25 -11  15
 ## [1] &quot;Iteracion 0&quot;
 ## [1] 0 0 0 0
 ## [1] &quot;Iteracion 1&quot;
-## [1] 15.0 -5.5  6.0 25.0
+## [1]  0.600000  2.272727 -1.100000  1.875000
+## [1] &quot;nbr_Numerador: 2.27272727272727&quot;
+## [1] &quot;nbr_Denominador: 2.27272727272727&quot;
+## [1] &quot;nbr_Diff: 1&quot;
 ## [1] &quot;Iteracion 2&quot;
-## [1]  15.0 -13.0  -9.0  18.5
+## [1]  1.0472727  1.7159091 -0.8052273  0.8852273
+## [1] &quot;nbr_Numerador: 0.989772727272727&quot;
+## [1] &quot;nbr_Denominador: 1.71590909090909&quot;
+## [1] &quot;nbr_Diff: 0.57682119205298&quot;
 ## [1] &quot;Iteracion 3&quot;
-## [1]  15 -13  -9  56
+## [1]  0.9326364  2.0533058 -1.0493409  1.1308807
+## [1] &quot;nbr_Numerador: 0.337396694214876&quot;
+## [1] &quot;nbr_Denominador: 2.05330578512397&quot;
+## [1] &quot;nbr_Diff: 0.164318776413765&quot;
 ## [1] &quot;Iteracion 4&quot;
-## [1]  15 -13  -9  56
+## [1]  1.0151988  1.9536958 -0.9681086  0.9738427
+## [1] &quot;nbr_Numerador: 0.157037964876033&quot;
+## [1] &quot;nbr_Denominador: 1.95369576446281&quot;
+## [1] &quot;nbr_Diff: 0.0803799484712567&quot;
 ## [1] &quot;Iteracion 5&quot;
-## [1]  15 -13  -9  56
+## [1]  0.9889913  2.0114147 -1.0102859  1.0213505
+## [1] &quot;nbr_Numerador: 0.0577189613072875&quot;
+## [1] &quot;nbr_Denominador: 2.0114147257701&quot;
+## [1] &quot;nbr_Diff: 0.0286957038584815&quot;
 ## [1] &quot;Iteracion 6&quot;
-## [1]  15 -13  -9  56
+## [1]  1.0031987  1.9922413 -0.9945217  0.9944337
+## [1] &quot;nbr_Numerador: 0.0269167702268031&quot;
+## [1] &quot;nbr_Denominador: 1.99224126068276&quot;
+## [1] &quot;nbr_Diff: 0.0135107984951473&quot;
 ## [1] &quot;Iteracion 7&quot;
-## [1]  15 -13  -9  56
+## [1]  0.9981285  2.0023069 -1.0019722  1.0035943
+## [1] &quot;nbr_Numerador: 0.010065620869903&quot;
+## [1] &quot;nbr_Denominador: 2.00230688155266&quot;
+## [1] &quot;nbr_Diff: 0.00502701207424198&quot;
 ## [1] &quot;Iteracion 8&quot;
-## [1]  15 -13  -9  56
+## [1]  1.0006251  1.9986703 -0.9990356  0.9988884
+## [1] &quot;nbr_Numerador: 0.00470591956037136&quot;
+## [1] &quot;nbr_Denominador: 1.99867030112236&quot;
+## [1] &quot;nbr_Diff: 0.00235452518493358&quot;
 ## [1] &quot;Iteracion 9&quot;
-## [1]  15 -13  -9  56
+## [1]  0.9996741  2.0004477 -1.0003692  1.0006192
+## [1] &quot;nbr_Numerador: 0.00177737042265291&quot;
+## [1] &quot;nbr_Denominador: 2.00044767154501&quot;
+## [1] &quot;nbr_Diff: 0.000888486336301011&quot;
 ## [1] &quot;Iteracion 10&quot;
-## [1]  15 -13  -9  56
+## [1]  1.0001186  1.9997679 -0.9998281  0.9997860
+## [1] &quot;nbr_Numerador: 0.000833211679919565&quot;
+## [1] &quot;nbr_Denominador: 1.99976794701004&quot;
+## [1] &quot;nbr_Diff: 0.000416654182884242&quot;
+## [1] &quot;Se llega al tope de iteraciones&quot;
 ## [1] &quot;Resultado final: &quot;
-## [1]  15 -13  -9  56</code></pre>
+## [1]  1.0001186  1.9997679 -0.9998281  0.9997860</code></pre>
+<p>Con esta versión se sigue obteniendo un resultado correcto.</p>
+<p>Adicional al threshold, se agregó ahora otro parámetro <em>str_Metodo</em> que indica cuál método se ejecutará, Jacobi o Gauss-Seidel. Este documento se limita a la revisión del método de Jacobi, en otro documento se realizará la revisión del método Gauss-Seidel.</p>
+<p>Ejecutamos el mismo ejemplo, con 100 iteraciones máximo y un threshold de <span class="math inline">\(10^{-5}\)</span></p>
+<pre><code>## [1] &quot;Matriz A:&quot;</code></pre>
+<pre><code>##      [,1] [,2] [,3] [,4]
+## [1,]    0    3   -1    8
+## [2,]   -1   11   -1    3
+## [3,]    2   -1   10   -1
+## [4,]   10   -1    2    0</code></pre>
+<pre><code>## [1] &quot;Vector b:&quot;</code></pre>
+<pre><code>## [1]  15  25 -11   6</code></pre>
+<pre><code>## [1] &quot;Punto inicial:&quot;</code></pre>
+<pre><code>## [1] 0 0 0 0</code></pre>
+<pre><code>## [1] &quot;Máximo número de iteraciones:&quot;</code></pre>
+<pre><code>## [1] 100</code></pre>
+<pre><code>## [1] &quot;Threshold:&quot;</code></pre>
+<pre><code>## [1] 1e-05</code></pre>
+<p>Obteniendo como resultado:</p>
+<pre><code>## [1] &quot;Solucion mediante metodo de Jacobi&quot;
+## [1] &quot;Matriz A:&quot;
+##      [,1] [,2] [,3] [,4]
+## [1,]    0    3   -1    8
+## [2,]   -1   11   -1    3
+## [3,]    2   -1   10   -1
+## [4,]   10   -1    2    0
+## [1] &quot;Vector b:&quot;
+## [1]  15  25 -11   6
+## [1] &quot;La matriz tiene algun cero en la diagonal, comienza ordenamiento&quot;
+## [1] &quot;Matriz ordenada:&quot;
+##      [,1] [,2] [,3] [,4]
+## [1,]   10   -1    2    0
+## [2,]   -1   11   -1    3
+## [3,]    2   -1   10   -1
+## [4,]    0    3   -1    8
+## [1] &quot;Vector ordenado:&quot;
+## [1]   6  25 -11  15
+## [1] &quot;Iteracion 0&quot;
+## [1] 0 0 0 0
+## [1] &quot;Iteracion 1&quot;
+## [1]  0.600000  2.272727 -1.100000  1.875000
+## [1] &quot;nbr_Numerador: 2.27272727272727&quot;
+## [1] &quot;nbr_Denominador: 2.27272727272727&quot;
+## [1] &quot;nbr_Diff: 1&quot;
+## [1] &quot;Iteracion 2&quot;
+## [1]  1.0472727  1.7159091 -0.8052273  0.8852273
+## [1] &quot;nbr_Numerador: 0.989772727272727&quot;
+## [1] &quot;nbr_Denominador: 1.71590909090909&quot;
+## [1] &quot;nbr_Diff: 0.57682119205298&quot;
+## [1] &quot;Iteracion 3&quot;
+## [1]  0.9326364  2.0533058 -1.0493409  1.1308807
+## [1] &quot;nbr_Numerador: 0.337396694214876&quot;
+## [1] &quot;nbr_Denominador: 2.05330578512397&quot;
+## [1] &quot;nbr_Diff: 0.164318776413765&quot;
+## [1] &quot;Iteracion 4&quot;
+## [1]  1.0151988  1.9536958 -0.9681086  0.9738427
+## [1] &quot;nbr_Numerador: 0.157037964876033&quot;
+## [1] &quot;nbr_Denominador: 1.95369576446281&quot;
+## [1] &quot;nbr_Diff: 0.0803799484712567&quot;
+## [1] &quot;Iteracion 5&quot;
+## [1]  0.9889913  2.0114147 -1.0102859  1.0213505
+## [1] &quot;nbr_Numerador: 0.0577189613072875&quot;
+## [1] &quot;nbr_Denominador: 2.0114147257701&quot;
+## [1] &quot;nbr_Diff: 0.0286957038584815&quot;
+## [1] &quot;Iteracion 6&quot;
+## [1]  1.0031987  1.9922413 -0.9945217  0.9944337
+## [1] &quot;nbr_Numerador: 0.0269167702268031&quot;
+## [1] &quot;nbr_Denominador: 1.99224126068276&quot;
+## [1] &quot;nbr_Diff: 0.0135107984951473&quot;
+## [1] &quot;Iteracion 7&quot;
+## [1]  0.9981285  2.0023069 -1.0019722  1.0035943
+## [1] &quot;nbr_Numerador: 0.010065620869903&quot;
+## [1] &quot;nbr_Denominador: 2.00230688155266&quot;
+## [1] &quot;nbr_Diff: 0.00502701207424198&quot;
+## [1] &quot;Iteracion 8&quot;
+## [1]  1.0006251  1.9986703 -0.9990356  0.9988884
+## [1] &quot;nbr_Numerador: 0.00470591956037136&quot;
+## [1] &quot;nbr_Denominador: 1.99867030112236&quot;
+## [1] &quot;nbr_Diff: 0.00235452518493358&quot;
+## [1] &quot;Iteracion 9&quot;
+## [1]  0.9996741  2.0004477 -1.0003692  1.0006192
+## [1] &quot;nbr_Numerador: 0.00177737042265291&quot;
+## [1] &quot;nbr_Denominador: 2.00044767154501&quot;
+## [1] &quot;nbr_Diff: 0.000888486336301011&quot;
+## [1] &quot;Iteracion 10&quot;
+## [1]  1.0001186  1.9997679 -0.9998281  0.9997860
+## [1] &quot;nbr_Numerador: 0.000833211679919565&quot;
+## [1] &quot;nbr_Denominador: 1.99976794701004&quot;
+## [1] &quot;nbr_Diff: 0.000416654182884242&quot;
+## [1] &quot;Iteracion 11&quot;
+## [1]  0.9999424  2.0000848 -1.0000683  1.0001085
+## [1] &quot;nbr_Numerador: 0.00032252355187723&quot;
+## [1] &quot;nbr_Denominador: 2.00008477458516&quot;
+## [1] &quot;nbr_Diff: 0.00016125494077826&quot;
+## [1] &quot;Iteracion 12&quot;
+## [1]  1.0000221  1.9999590 -0.9999692  0.9999597
+## [1] &quot;nbr_Numerador: 0.000148833380272495&quot;
+## [1] &quot;nbr_Denominador: 1.99995896273171&quot;
+## [1] &quot;nbr_Diff: 7.44182170964177e-05&quot;
+## [1] &quot;Iteracion 13&quot;
+## [1]  0.9999897  2.0000158 -1.0000126  1.0000192
+## [1] &quot;nbr_Numerador: 5.95757195190894e-05&quot;
+## [1] &quot;nbr_Denominador: 2.00001581636421&quot;
+## [1] &quot;nbr_Diff: 2.9787624193588e-05&quot;
+## [1] &quot;Iteracion 14&quot;
+## [1]  1.0000041  1.9999927 -0.9999944  0.9999925
+## [1] &quot;nbr_Numerador: 2.67461681305869e-05&quot;
+## [1] &quot;nbr_Denominador: 1.99999267537961&quot;
+## [1] &quot;nbr_Diff: 1.33731330418549e-05&quot;
+## [1] &quot;Iteracion 15&quot;
+## [1]  0.9999982  2.0000029 -1.0000023  1.0000034
+## [1] &quot;nbr_Numerador: 1.0943616738035e-05&quot;
+## [1] &quot;nbr_Denominador: 2.00000292370118&quot;
+## [1] &quot;nbr_Diff: 5.47180037006291e-06&quot;
+## [1] &quot;Se alcanza el threshold&quot;
+## [1] &quot;Resultado final: &quot;
+## [1]  0.9999982  2.0000029 -1.0000023  1.0000034</code></pre>
+<p>Se detiene el algoritmo al alcanzar el threshold definido, obteniendo como resultado un vector muy similar al de 10 iteraciones.</p>
+<p>Lo comparamos con la función <em>lsolve.jacobi</em> con los mismos parámetros:</p>
+<pre class="r"><code>sol.lsolve &lt;- lsolve.jacobi(mtrx_A, vct_B, xinit = vct_X0, reltol = 1e-05, 
+                            maxiter = 100, weight = 1, adjsym = FALSE, verbose = TRUE)
+sol.lsolve$x</code></pre>
+<pre><code>##            [,1]
+## [1,]  1.0000041
+## [2,]  1.9999927
+## [3,] -0.9999944
+## [4,]  0.9999925</code></pre>
+<p>Donde observamos que los resultados coinciden en aproximadamente 5 decimales, de hecho coincide el resultado de <em>lsolve.jacobi</em> con la iteración 14 de nuestro método, donde el cociente <span class="math inline">\(\frac{||x^{(k)}-x^{(k-1)}||_\infty}{||x^{(k)}||_\infty}\)</span> es igual a <span class="math inline">\(1.33731330418549\times 10^{-5}\)</span>.</p>
+</div>
+<div id="pruebas-con-otras-matrices" class="section level2">
+<h2>Pruebas con otras matrices</h2>
+<p>Probamos con el ejemplo más sencillo, donde <span class="math inline">\(A\)</span> es la matriz identidad:</p>
+<pre><code>## [1] &quot;Matriz A:&quot;</code></pre>
+<pre><code>##       [,1] [,2] [,3] [,4] [,5] [,6] [,7] [,8] [,9] [,10]
+##  [1,]    1    0    0    0    0    0    0    0    0     0
+##  [2,]    0    1    0    0    0    0    0    0    0     0
+##  [3,]    0    0    1    0    0    0    0    0    0     0
+##  [4,]    0    0    0    1    0    0    0    0    0     0
+##  [5,]    0    0    0    0    1    0    0    0    0     0
+##  [6,]    0    0    0    0    0    1    0    0    0     0
+##  [7,]    0    0    0    0    0    0    1    0    0     0
+##  [8,]    0    0    0    0    0    0    0    1    0     0
+##  [9,]    0    0    0    0    0    0    0    0    1     0
+## [10,]    0    0    0    0    0    0    0    0    0     1</code></pre>
+<pre><code>## [1] &quot;Vector b:&quot;</code></pre>
+<pre><code>##  [1] -12  -8   9 -17  19  20  19  19  29  -5</code></pre>
+<pre><code>## [1] &quot;Punto inicial:&quot;</code></pre>
+<pre><code>##  [1] 0 0 0 0 0 0 0 0 0 0</code></pre>
+<pre><code>## [1] &quot;Máximo número de iteraciones:&quot;</code></pre>
+<pre><code>## [1] 100</code></pre>
+<pre><code>## [1] &quot;Threshold:&quot;</code></pre>
+<pre><code>## [1] 1e-05</code></pre>
+<p>Obteniendo como resultado el vector <span class="math inline">\(b\)</span>:</p>
+<pre class="r"><code>funcResolverSE(mtrx_A, vct_B, vct_X0, nbr_MaxIteraciones, nbr_Threshold, str_Metodo)</code></pre>
+<pre><code>## [1] &quot;Solucion mediante metodo de Jacobi&quot;
+## [1] &quot;Matriz A:&quot;
+##       [,1] [,2] [,3] [,4] [,5] [,6] [,7] [,8] [,9] [,10]
+##  [1,]    1    0    0    0    0    0    0    0    0     0
+##  [2,]    0    1    0    0    0    0    0    0    0     0
+##  [3,]    0    0    1    0    0    0    0    0    0     0
+##  [4,]    0    0    0    1    0    0    0    0    0     0
+##  [5,]    0    0    0    0    1    0    0    0    0     0
+##  [6,]    0    0    0    0    0    1    0    0    0     0
+##  [7,]    0    0    0    0    0    0    1    0    0     0
+##  [8,]    0    0    0    0    0    0    0    1    0     0
+##  [9,]    0    0    0    0    0    0    0    0    1     0
+## [10,]    0    0    0    0    0    0    0    0    0     1
+## [1] &quot;Vector b:&quot;
+##  [1] -12  -8   9 -17  19  20  19  19  29  -5
+## [1] &quot;Iteracion 0&quot;
+##  [1] 0 0 0 0 0 0 0 0 0 0
+## [1] &quot;Iteracion 1&quot;
+##  [1] -12  -8   9 -17  19  20  19  19  29  -5
+## [1] &quot;nbr_Numerador: 29&quot;
+## [1] &quot;nbr_Denominador: 29&quot;
+## [1] &quot;nbr_Diff: 1&quot;
+## [1] &quot;Iteracion 2&quot;
+##  [1] -12  -8   9 -17  19  20  19  19  29  -5
+## [1] &quot;nbr_Numerador: 0&quot;
+## [1] &quot;nbr_Denominador: 29&quot;
+## [1] &quot;nbr_Diff: 0&quot;
+## [1] &quot;Se alcanza el threshold&quot;
+## [1] &quot;Resultado final: &quot;
+##  [1] -12  -8   9 -17  19  20  19  19  29  -5</code></pre>
+<p>Probamos ahora una matriz de <span class="math inline">\(10 \times 10\)</span> donde los elementos de la diagonal son mayores en valor absoluto que el resto de los elementos de cada renglón:</p>
+<pre><code>## [1] &quot;Matriz A:&quot;</code></pre>
+<pre><code>##       [,1] [,2] [,3] [,4] [,5] [,6] [,7] [,8] [,9] [,10]
+##  [1,]  300   19   15  -20  -29   29  -15  -28   -9    -6
+##  [2,]   -1 -150  -14    0   -7   14   11   -6    6    10
+##  [3,]   13    3 -310    9   -8    7   -6    8   20   -22
+##  [4,]    3   -2  -15  260    2  -12   18  -10  -17    25
+##  [5,]  -23  -29    6    9  320   -4    4  -13   13     8
+##  [6,]   -4   15    9   12   21  220  -14    1   18    -1
+##  [7,]   11  -11    8   28   13   27 -330   18   24    13
+##  [8,]   17  -17  -10   -7   11   22   21  240   12   -21
+##  [9,]    9  -22   -9  -16    4  -20   28   16  300    17
+## [10,]   16   20   13   15  -26    8   24    5  -27   280</code></pre>
+<pre><code>## [1] &quot;Vector b:&quot;</code></pre>
+<pre><code>##  [1] -12  -8   9 -17  19  20  19  19  29  -5</code></pre>
+<pre><code>## [1] &quot;Punto inicial:&quot;</code></pre>
+<pre><code>##  [1] 0 0 0 0 0 0 0 0 0 0</code></pre>
+<pre><code>## [1] &quot;Máximo número de iteraciones:&quot;</code></pre>
+<pre><code>## [1] 100</code></pre>
+<pre><code>## [1] &quot;Threshold:&quot;</code></pre>
+<pre><code>## [1] 1e-05</code></pre>
+<p>El algoritmo devuelve:</p>
+<pre class="r"><code>funcResolverSE(mtrx_A, vct_B, vct_X0, nbr_MaxIteraciones, nbr_Threshold, str_Metodo)</code></pre>
+<pre><code>## [1] &quot;Solucion mediante metodo de Jacobi&quot;
+## [1] &quot;Matriz A:&quot;
+##       [,1] [,2] [,3] [,4] [,5] [,6] [,7] [,8] [,9] [,10]
+##  [1,]  300   19   15  -20  -29   29  -15  -28   -9    -6
+##  [2,]   -1 -150  -14    0   -7   14   11   -6    6    10
+##  [3,]   13    3 -310    9   -8    7   -6    8   20   -22
+##  [4,]    3   -2  -15  260    2  -12   18  -10  -17    25
+##  [5,]  -23  -29    6    9  320   -4    4  -13   13     8
+##  [6,]   -4   15    9   12   21  220  -14    1   18    -1
+##  [7,]   11  -11    8   28   13   27 -330   18   24    13
+##  [8,]   17  -17  -10   -7   11   22   21  240   12   -21
+##  [9,]    9  -22   -9  -16    4  -20   28   16  300    17
+## [10,]   16   20   13   15  -26    8   24    5  -27   280
+## [1] &quot;Vector b:&quot;
+##  [1] -12  -8   9 -17  19  20  19  19  29  -5
+## [1] &quot;Iteracion 0&quot;
+##  [1] 0 0 0 0 0 0 0 0 0 0
+## [1] &quot;Iteracion 1&quot;
+##  [1] -0.04000000  0.05333333 -0.02903226 -0.06538462  0.05937500
+##  [6]  0.09090909 -0.05757576  0.07916667  0.09666667 -0.01785714
+## [1] &quot;nbr_Numerador: 0.0966666666666667&quot;
+## [1] &quot;nbr_Denominador: 0.0966666666666667&quot;
+## [1] &quot;nbr_Diff: 1&quot;
+## [1] &quot;Iteracion 2&quot;
+##  [1] -0.042280477  0.057310994 -0.020910063 -0.047380253  0.065308182
+##  [6]  0.073617938 -0.046516413  0.070248407  0.104851990  0.001228514
+## [1] &quot;nbr_Numerador: 0.0190856572862621&quot;
+## [1] &quot;nbr_Denominador: 0.104851989856022&quot;
+## [1] &quot;nbr_Diff: 0.182024750436016&quot;
+## [1] &quot;Iteracion 3&quot;
+##  [1] -0.0391453258  0.0574449421 -0.0222586360 -0.0501070699  0.0633197289
+##  [6]  0.0715859521 -0.0453207676  0.0731613649  0.1035460596  0.0007786686
+## [1] &quot;nbr_Numerador: 0.00313515077008666&quot;
+## [1] &quot;nbr_Denominador: 0.103546059582531&quot;
+## [1] &quot;nbr_Diff: 0.0302778375413485&quot;
+## [1] &quot;Iteracion 4&quot;
+##  [1] -0.0389804766  0.0573419858 -0.0221998974 -0.0503113767  0.0638014774
+##  [6]  0.0721951832 -0.0456831822  0.0730117758  0.1029255274  0.0003916258
+## [1] &quot;nbr_Numerador: 0.000620532141550029&quot;
+## [1] &quot;nbr_Denominador: 0.102925527440981&quot;
+## [1] &quot;nbr_Diff: 0.00602894303267819&quot;
+## [1] &quot;Iteracion 5&quot;
+##  [1] -0.0390612759  0.0572985669 -0.0222080003 -0.0502702902  0.0638495940
+##  [6]  0.0721945849 -0.0456898785  0.0729402400  0.1030018256  0.0003990032
+## [1] &quot;nbr_Numerador: 8.07993325815173e-05&quot;
+## [1] &quot;nbr_Denominador: 0.103001825589623&quot;
+## [1] &quot;nbr_Diff: 0.000784445635977715&quot;
+## [1] &quot;Iteracion 6&quot;
+##  [1] -0.0390552477  0.0573034746 -0.0222091888 -0.0502685656  0.0638327341
+##  [6]  0.0721832637 -0.0456840506  0.0729390146  0.1030063544  0.0004185906
+## [1] &quot;nbr_Numerador: 1.95873794109312e-05&quot;
+## [1] &quot;nbr_Denominador: 0.103006354442809&quot;
+## [1] &quot;nbr_Diff: 0.000190157000671317&quot;
+## [1] &quot;Iteracion 7&quot;
+##  [1] -0.0390552149  0.0573052389 -0.0222099013 -0.0502710966  0.0638326481
+##  [6]  0.0721846975 -0.0456844521  0.0729417240  0.1030044713  0.0004165754
+## [1] &quot;nbr_Numerador: 2.70945724430149e-06&quot;
+## [1] &quot;nbr_Denominador: 0.103004471345628&quot;
+## [1] &quot;nbr_Diff: 2.63042682410359e-05&quot;
+## [1] &quot;Iteracion 8&quot;
+##  [1] -0.0390554707  0.0573050955 -0.0222098225 -0.0502708551  0.0638331548
+##  [6]  0.0721848603 -0.0456846964  0.0729415686  0.1030045473  0.0004163716
+## [1] &quot;nbr_Numerador: 5.06684930304258e-07&quot;
+## [1] &quot;nbr_Denominador: 0.103004547269853&quot;
+## [1] &quot;nbr_Diff: 4.91905400037179e-06&quot;
+## [1] &quot;Se alcanza el threshold&quot;
+## [1] &quot;Resultado final: &quot;
+##  [1] -0.0390554707  0.0573050955 -0.0222098225 -0.0502708551  0.0638331548
+##  [6]  0.0721848603 -0.0456846964  0.0729415686  0.1030045473  0.0004163716</code></pre>
+<p>Se detiene en la iteración 8 al llegar al threshold.</p>
+<p>La función <em>lsolve.jacobi</em> devuelve un resultado muy similar, con aproximadamente 6 decimales iguales al resultado de nuestro algoritmo:</p>
+<pre><code>##                [,1]
+##  [1,] -0.0390552149
+##  [2,]  0.0573052389
+##  [3,] -0.0222099013
+##  [4,] -0.0502710966
+##  [5,]  0.0638326481
+##  [6,]  0.0721846975
+##  [7,] -0.0456844521
+##  [8,]  0.0729417240
+##  [9,]  0.1030044713
+## [10,]  0.0004165754</code></pre>
+<pre><code>## [1] 6</code></pre>
+</div>
 </div>
 
 
