@@ -228,7 +228,7 @@ div.tocify {
 <p>En esta versión no se incluye aún el threshold como un criterio de paro del algoritmo, únicamente las iteraciones indican cuándo termina el algoritmo.</p>
 <div id="prueba-con-ejemplo-de-clase" class="section level2">
 <h2>Prueba con Ejemplo de Clase</h2>
-<p>La primera prueba es con la matriz ejemplo que se muestra en <a href="https://github.com/ITAM-DS/analisis-numerico-computo-cientifico/blob/master/temas/III.computo_matricial/3.3.e.Jacobi_Gauss-Seidel.ipynb" class="uri">https://github.com/ITAM-DS/analisis-numerico-computo-cientifico/blob/master/temas/III.computo_matricial/3.3.e.Jacobi_Gauss-Seidel.ipynb</a></p>
+<p>La primera prueba es con la matriz ejemplo que se muestra en la nota de métodos iterativos <a href="https://github.com/ITAM-DS/analisis-numerico-computo-cientifico/blob/master/temas/III.computo_matricial/3.3.e.Jacobi_Gauss-Seidel.ipynb">Jacobi y Gauss-Seidel</a> de nuestra materia de Métodos Numéricos y Optimización.</p>
 <pre><code>## [1] &quot;Matriz A:&quot;</code></pre>
 <pre><code>##      [,1] [,2] [,3] [,4]
 ## [1,]    0    3   -1    8
@@ -786,9 +786,12 @@ sol.lsolve$x</code></pre>
 ## [4,]  0.9999925</code></pre>
 <p>Donde observamos que los resultados coinciden en aproximadamente 5 decimales, de hecho coincide el resultado de <em>lsolve.jacobi</em> con la iteración 14 de nuestro método, donde el cociente <span class="math inline">\(\frac{||x^{(k)}-x^{(k-1)}||_\infty}{||x^{(k)}||_\infty}\)</span> es igual a <span class="math inline">\(1.33731330418549\times 10^{-5}\)</span>.</p>
 </div>
-<div id="pruebas-con-otras-matrices" class="section level2">
-<h2>Pruebas con otras matrices</h2>
-<p>Probamos con el ejemplo más sencillo, donde <span class="math inline">\(A\)</span> es la matriz identidad:</p>
+<div id="matrices-dominantes-estrictas-en-la-diagonal-por-renglones" class="section level2">
+<h2>Matrices Dominantes Estrictas en la Diagonal por Renglones</h2>
+<p>Una <a href="https://github.com/ITAM-DS/analisis-numerico-computo-cientifico/blob/master/temas/III.computo_matricial/3.3.e.Jacobi_Gauss-Seidel.ipynb">matriz dominante estricta en la diagonal por renglones</a> es aquélla que cumple:</p>
+<p><span class="math inline">\(\mid a_{ij} \mid \gt \sum_{\overset{j=1}{j\neq i}}^n \mid a_{ij} \mid\)</span> para toda <span class="math inline">\(i\)</span>, donde <span class="math inline">\(a_{ij}\)</span> es el elemento del renglón <span class="math inline">\(i\)</span> y columna <span class="math inline">\(j\)</span> de <span class="math inline">\(A\)</span>.</p>
+<p>Realizaremos pruebas con estas matrices, pues como se menciona en <a href="https://github.com/ITAM-DS/analisis-numerico-computo-cientifico/blob/master/temas/III.computo_matricial/3.3.e.Jacobi_Gauss-Seidel.ipynb">la nota de clase</a>, existe un teorema que garantiza la convergencia del método Jacobi si la matriz A es dominante estricta en la diagonal por renglones.</p>
+<p>Probamos con el ejemplo más sencillo de estas matrices, donde <span class="math inline">\(A\)</span> es la matriz identidad:</p>
 <pre><code>## [1] &quot;Matriz A:&quot;</code></pre>
 <pre><code>##       [,1] [,2] [,3] [,4] [,5] [,6] [,7] [,8] [,9] [,10]
 ##  [1,]    1    0    0    0    0    0    0    0    0     0
@@ -841,7 +844,7 @@ sol.lsolve$x</code></pre>
 ## [1] &quot;Se alcanza el threshold&quot;
 ## [1] &quot;Resultado final: &quot;
 ##  [1] -12  -8   9 -17  19  20  19  19  29  -5</code></pre>
-<p>Probamos ahora una matriz de <span class="math inline">\(10 \times 10\)</span> donde los elementos de la diagonal son mayores en valor absoluto que el resto de los elementos de cada renglón:</p>
+<p>Probamos ahora una matriz de <span class="math inline">\(10 \times 10\)</span> estrictamente diagonal positiva diferente a la identidad:</p>
 <pre><code>## [1] &quot;Matriz A:&quot;</code></pre>
 <pre><code>##       [,1] [,2] [,3] [,4] [,5] [,6] [,7] [,8] [,9] [,10]
 ##  [1,]  300   19   15  -20  -29   29  -15  -28   -9    -6
@@ -933,8 +936,9 @@ sol.lsolve$x</code></pre>
 ## [1] &quot;Resultado final: &quot;
 ##  [1] -0.0390554707  0.0573050955 -0.0222098225 -0.0502708551  0.0638331548
 ##  [6]  0.0721848603 -0.0456846964  0.0729415686  0.1030045473  0.0004163716</code></pre>
-<p>Se detiene en la iteración 8 al llegar al threshold.</p>
+<p>Se detiene en la iteración 8 al llegar al threshold, pues el método converge.</p>
 <p>La función <em>lsolve.jacobi</em> devuelve un resultado muy similar, con aproximadamente 6 decimales iguales al resultado de nuestro algoritmo:</p>
+<pre class="r"><code>sol.lsolve$x</code></pre>
 <pre><code>##                [,1]
 ##  [1,] -0.0390552149
 ##  [2,]  0.0573052389
@@ -946,6 +950,7 @@ sol.lsolve$x</code></pre>
 ##  [8,]  0.0729417240
 ##  [9,]  0.1030044713
 ## [10,]  0.0004165754</code></pre>
+<pre class="r"><code>sol.lsolve$iter</code></pre>
 <pre><code>## [1] 6</code></pre>
 </div>
 </div>
