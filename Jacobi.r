@@ -215,9 +215,18 @@ funcOrdenarEcuaciones <- function(mtrx_A, vct_B){
     # Si sí es único:
     if (vct_OrdDesc[1] != vct_OrdDesc[2]){
       #print('Es unico')
+
       # Se obtiene el índice donde está ese valor
       nbr_Index <- match(nbr_Norm,vct_Col)
       # print(nbr_Index)
+
+      # Si el índice es un NA
+      if (is.na(nbr_Index)==TRUE){
+
+        # Multiplicamos el valor de la norma infinito por -1
+        nbr_Index <- match(nbr_Norm * -1,vct_Col)
+
+      }
 
       # Para realizar el intercambio de filas, nuestra
       # fila origen será: nbr_Index, y la fila destino: j
