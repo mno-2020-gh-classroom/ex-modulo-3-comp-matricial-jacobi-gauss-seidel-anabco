@@ -7,7 +7,9 @@
 # sea menor a un threshold dado o que se alcance el tope de iteraciones.
 
 # Instalación de librerías y paqueterías auxiliares
-install.packages('pracma', repos = "http://cran.us.r-project.org")
+if(!require(pracma)){
+    install.packages('pracma', repos = "http://cran.us.r-project.org")
+}
 library('pracma')
 
 ########################## Declaración de funciones ##########################
@@ -297,7 +299,7 @@ funcResolverSE <- function(mtrx_A, vct_B, vct_X0, nbr_MaxIteraciones, nbr_Thresh
       print('Solucion mediante metodo de Jacobi')
     }
     if (str_Metodo=='GS'){
-      print('Solucion mediante metodo de Gauss-Sidel')
+      print('Solucion mediante metodo de Gauss-Seidel')
     }
 
     print('Matriz A:')
@@ -357,14 +359,14 @@ funcResolverSE <- function(mtrx_A, vct_B, vct_X0, nbr_MaxIteraciones, nbr_Thresh
             print('La matriz no cumple con ser de dimensiones nxn')
         }
       } else {
-        print('El vector de aproximaciones, debe tener la misma cantidad de filas que la matriz a evaluar')
+        print('El vector de aproximaciones no es de las dimensiones esperadas')
       }
     } else {
-      print('El vector de resultados, debe tener la misma cantidad de filas que la matriz a evaluar')
+      print('El vector de resultados no es de las dimensiones esperadas')
     }
 
   }else{
-    print('El metodo especificado no es valido, favor de verificar')
+    print('El metodo especificado no es valido, se espera "GS" para Gauss-Seidel o "J" para Jacobi')
   }
 }
 
