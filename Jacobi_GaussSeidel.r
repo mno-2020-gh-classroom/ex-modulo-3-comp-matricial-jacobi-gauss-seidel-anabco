@@ -7,7 +7,9 @@
 # sea menor a un threshold dado o que se alcance el tope de iteraciones.
 
 # Instalación de librerías y paqueterías auxiliares
-install.packages('pracma', repos = "http://cran.us.r-project.org")
+if(!require(pracma)){
+    install.packages('pracma', repos = "http://cran.us.r-project.org")
+}
 library('pracma')
 
 ########################## Declaración de funciones ##########################
@@ -215,9 +217,18 @@ funcOrdenarEcuaciones <- function(mtrx_A, vct_B){
     # Si sí es único:
     if (vct_OrdDesc[1] != vct_OrdDesc[2]){
       #print('Es unico')
+
       # Se obtiene el índice donde está ese valor
       nbr_Index <- match(nbr_Norm,vct_Col)
       # print(nbr_Index)
+
+      # Si el índice es un NA
+      if (is.na(nbr_Index)==TRUE){
+
+        # Multiplicamos el valor de la norma infinito por -1
+        nbr_Index <- match(nbr_Norm * -1,vct_Col)
+
+      }
 
       # Para realizar el intercambio de filas, nuestra
       # fila origen será: nbr_Index, y la fila destino: j
@@ -288,7 +299,7 @@ funcResolverSE <- function(mtrx_A, vct_B, vct_X0, nbr_MaxIteraciones, nbr_Thresh
       print('Solucion mediante metodo de Jacobi')
     }
     if (str_Metodo=='GS'){
-      print('Solucion mediante metodo de Gauss-Sidel')
+      print('Solucion mediante metodo de Gauss-Seidel')
     }
 
     print('Matriz A:')
@@ -348,14 +359,14 @@ funcResolverSE <- function(mtrx_A, vct_B, vct_X0, nbr_MaxIteraciones, nbr_Thresh
             print('La matriz no cumple con ser de dimensiones nxn')
         }
       } else {
-        print('El vector de aproximaciones, debe tener la misma cantidad de filas que la matriz a evaluar')
+        print('El vector de aproximaciones no es de las dimensiones esperadas')
       }
     } else {
-      print('El vector de resultados, debe tener la misma cantidad de filas que la matriz a evaluar')
+      print('El vector de resultados no es de las dimensiones esperadas')
     }
 
   }else{
-    print('El metodo especificado no es valido, favor de verificar')
+    print('El metodo especificado no es valido, se espera "GS" para Gauss-Seidel o "J" para Jacobi')
   }
 }
 

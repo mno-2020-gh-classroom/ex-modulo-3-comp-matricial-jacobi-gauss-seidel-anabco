@@ -332,7 +332,7 @@ funcMetodoJacobi <- function(mtrx_A, vct_B, vct_X0, nbr_MaxIteraciones){
 
 ## Prueba con Ejemplo de Clase
 
-La primera prueba es con la matriz ejemplo que se muestra en https://github.com/ITAM-DS/analisis-numerico-computo-cientifico/blob/master/temas/III.computo_matricial/3.3.e.Jacobi_Gauss-Seidel.ipynb
+La primera prueba es con la matriz ejemplo que se muestra en la nota de métodos iterativos [Jacobi y Gauss-Seidel](https://github.com/ITAM-DS/analisis-numerico-computo-cientifico/blob/master/temas/III.computo_matricial/3.3.e.Jacobi_Gauss-Seidel.ipynb) de nuestra materia de Métodos Numéricos y Optimización.
 
 ```{r, echo=FALSE }
 mtrx_A <- matrix(c( 0,3,-1,8,
@@ -1235,9 +1235,16 @@ sol.lsolve$x
 Donde observamos que los resultados coinciden en aproximadamente 5 decimales, de hecho coincide el resultado de *lsolve.jacobi* con la iteración 14 de nuestro método, donde el cociente $\frac{||x^{(k)}-x^{(k-1)}||_\infty}{||x^{(k)}||_\infty}$ es igual a $1.33731330418549\times 10^{-5}$.
 
 
-## Pruebas con otras matrices
+## Matrices Dominantes Estrictas en la Diagonal por Renglones
 
-Probamos con el ejemplo más sencillo, donde $A$ es la matriz identidad:
+Una [matriz dominante estricta en la diagonal por renglones](https://github.com/ITAM-DS/analisis-numerico-computo-cientifico/blob/master/temas/III.computo_matricial/3.3.e.Jacobi_Gauss-Seidel.ipynb) es aquélla que cumple:
+
+$\mid a_{ij} \mid \gt \sum_{\overset{j=1}{j\neq i}}^n \mid a_{ij} \mid$ para toda $i$, donde $a_{ij}$ es el elemento del renglón $i$ y columna $j$ de $A$.
+
+
+Realizaremos pruebas con estas matrices, pues como se menciona en [la nota de clase](https://github.com/ITAM-DS/analisis-numerico-computo-cientifico/blob/master/temas/III.computo_matricial/3.3.e.Jacobi_Gauss-Seidel.ipynb), existe un teorema que garantiza la convergencia del método Jacobi si la matriz A es dominante estricta en la diagonal por renglones.
+
+Probamos con el ejemplo más sencillo de estas matrices, donde $A$ es la matriz identidad:
 
 ```{r, echo=F}
 
@@ -1288,7 +1295,7 @@ funcResolverSE(mtrx_A, vct_B, vct_X0, nbr_MaxIteraciones, nbr_Threshold, str_Met
 
 ```
 
-Probamos ahora una matriz de $10 \times 10$ donde los elementos de la diagonal son mayores en valor absoluto que el resto de los elementos de cada renglón:
+Probamos ahora una matriz de $10 \times 10$ estrictamente diagonal positiva diferente a la identidad:
 
 ```{r, echo=F}
 
@@ -1348,7 +1355,7 @@ funcResolverSE(mtrx_A, vct_B, vct_X0, nbr_MaxIteraciones, nbr_Threshold, str_Met
 
 ```
 
-Se detiene en la iteración 8 al llegar al threshold.
+Se detiene en la iteración 8 al llegar al threshold, pues el método converge.
 
 La función *lsolve.jacobi* devuelve un resultado muy similar, con aproximadamente 6 decimales iguales al resultado de nuestro algoritmo:
 
@@ -1356,6 +1363,12 @@ La función *lsolve.jacobi* devuelve un resultado muy similar, con aproximadamen
 
 sol.lsolve <- lsolve.jacobi(mtrx_A, vct_B, xinit = vct_X0, reltol = 1e-05, 
                             maxiter = 100, weight = 1, adjsym = FALSE, verbose = TRUE)
+
+```
+
+
+```{r, echo=T, message=F}
+
 sol.lsolve$x
 sol.lsolve$iter
 
