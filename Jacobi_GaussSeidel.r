@@ -244,6 +244,13 @@ funcObtenerVctRslt <- function(nbr_MaxIteraciones, n, mtrx_A, vct_B, vct_X0, nbr
     nbr_Diff <-  nbr_Numerador / nbr_Denominador
     print(paste0('nbr_Diff: ',nbr_Diff))
 
+    # Si se empiezan a obtener valores NaN, significa que no hay solución
+    if (is.na(nbr_Diff)){
+      print('No hay convergencia')
+      vct_X_Act <- rep(NA, size(vct_X0)[2])
+      break
+    }
+
     # Si se llega a una diferencia menor al threshold indicado, salimos del for
     if (nbr_Diff<nbr_Threshold){
       print('Se alcanza el threshold')
