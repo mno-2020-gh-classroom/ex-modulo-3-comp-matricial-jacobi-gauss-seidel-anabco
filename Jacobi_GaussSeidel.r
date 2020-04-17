@@ -477,6 +477,10 @@ funcResolverSE <- function(mtrx_A, vct_B, vct_X0, nbr_MaxIteraciones, nbr_Thresh
   #    El vector de aproximaciones luego del proceso de iteraciones
 
   # Se agrega condicón para validar que la matriz no sea singular
+
+  # Se inicializa el vector de resultados
+  vct_XRslt <- rep(NA, size(vct_X0)[2])
+
   if(!is.singular.matrix(mtrx_A)){
 
     if (str_Metodo == 'J' || str_Metodo == 'GS'){
@@ -513,8 +517,6 @@ funcResolverSE <- function(mtrx_A, vct_B, vct_X0, nbr_MaxIteraciones, nbr_Thresh
               print('Resultado final: ')
               print(vct_XRslt)
 
-              vct_XRslt
-
             } else {
               print('La matriz tiene algun cero en la diagonal, comienza ordenamiento')
 
@@ -536,8 +538,6 @@ funcResolverSE <- function(mtrx_A, vct_B, vct_X0, nbr_MaxIteraciones, nbr_Thresh
                 # Se imprime el resultado
                 print('Resultado final: ')
                 print(vct_XRslt)
-
-                vct_XRslt
 
               } else {
                 print('Pese al reordenamiento, aun hay ceros en la diagonal')
@@ -561,6 +561,10 @@ funcResolverSE <- function(mtrx_A, vct_B, vct_X0, nbr_MaxIteraciones, nbr_Thresh
   }else{
     print('La matriz no puede ser singular')
   }
+
+  # Se devuelve el vector de resultados
+  vct_XRslt
+
 }
 
 
