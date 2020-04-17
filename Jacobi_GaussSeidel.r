@@ -10,11 +10,31 @@
 if(!require(pracma)){
     install.packages('pracma', repos = "http://cran.us.r-project.org")
 }
+if(!require(matrixcalc)){
+    install.packages("matrixcalc")
+}
+library('matrixcalc')
 library('pracma')
 
 ########################## Declaración de funciones ##########################
 
 funcEsVectorValido <- function(mtrx, vct){
+  # Valida si el vector (ya se de resultados o aproximaciones) cuenta
+  # con la misma cantidad de filas que la matriz a evaluar.
+  #
+  # Parámetros
+  # ----------
+  # mtrx : matriz
+  #    La matriz a evaluar
+  # vct : vector
+  #    El vector cuyo # de filas se comparará contra las de la matriz a evaluar
+  #
+  # Regresa
+  # -------
+  # boolean
+  #    Una bandera a manera de booleano indicando si la cantidad de filas del
+  #    vector es igual o no a la cantidad de filas de la matriz a evaluar.
+  #
 
   # El vector b, debe tener la misma cantidad de filas que la matriz
   bool_VectorValido = FALSE
@@ -28,6 +48,19 @@ funcEsVectorValido <- function(mtrx, vct){
 
 # Valida que sea cuadrada la matriz
 funcEsMatrizCuadrada <- function(mtrx){
+  # Valida si la matriz es cuadrada (nxn)
+  #
+  # Parámetros
+  # ----------
+  # mtrx : matriz
+  #    La matriz a evaluar
+  #
+  # Regresa
+  # -------
+  # boolean
+  #    Una bandera a manera de booleano indicando si la cantidad de filas y
+  #    columnas de la matriz son iguales.
+  #
 
   # Si el número de filas es igual al número de columnas, es una matriz cuadrada
   if (nrow(mtrx)==ncol(mtrx)){
@@ -43,6 +76,19 @@ funcEsMatrizCuadrada <- function(mtrx){
 
  # Busca algún cero en la diagonal principal
 funcHayCeroEnDiagonal <- function(mtrx){
+  # Valida si se presenta alún cero en la diagonal de la matriz
+  #
+  # Parámetros
+  # ----------
+  # mtrx : matriz
+  #    La matriz a evaluar
+  #
+  # Regresa
+  # -------
+  # boolean
+  #    Una bandera a manera de booleano indicando si se encontró un cero en
+  #    la diagonal de la matriz.
+  #
 
   bool_HayCero <- FALSE
   nbr_Filas <- nrow(mtrx)
@@ -62,6 +108,26 @@ funcHayCeroEnDiagonal <- function(mtrx){
 
 # Función que obtiene cada componente del vector
 funcObtenerComponente <- function(i, n, mtrx_A, vct_X, vct_B){
+  # Obtiene 1 solo componente del vector de aproximaciones
+  #
+  # Parámetros
+  # ----------
+  # i : número
+  #    Indidce del componente (del vector de aproximaciones) que se quiere obtener
+  # n : número
+  #    Dimensión de filas o columnas de la matriz
+  # mtrx_A: matriz
+  #    La matriz que se está evaluando
+  # vct_X : vector
+  #    Vector de aproximaciones
+  # vct_B : vector
+  #    Vector de resultados del sistema de ecuaciones
+  #
+  # Regresa
+  # -------
+  # número
+  #    El valor del componente indicado para el vector de aproximaciones
+  #
 
   # Variable en la cual acumularemos el resutlado de la sumatoria
   nbr_Sumatoria = 0
@@ -97,6 +163,47 @@ funcObtenerComponente <- function(i, n, mtrx_A, vct_X, vct_B){
 
 # Función que obtiene la aproximación de las iteraciones
 funcObtenerVctRslt <- function(nbr_MaxIteraciones, n, mtrx_A, vct_B, vct_X0, nbr_Threshold, str_Metodo){
+  # Mediante un proceso de iteraciones, actualiza el vector de aproximaciones
+  # vct_X0 para lograr la igualdad: mtrx_A * vct_X0 = vct_B
+  # El proceso de iteraciones está sujeto a que se cumpla alguna de las
+  # siguientes 2 condiciones:
+  #   1: Alcanzar el máximo número de iteraciones (especificado en el parámetro
+  #     nbr_MaxIteraciones)
+  #   2: Lograr llegar a un diferencia entre iteraciones menor al threshold
+  #     que se especifica en el parámetro nbr_Threshold.
+  # En cuanto se cumpla alguna de dichas condiciones, termina el proceso de
+  # iteraciones.
+  # Adicionalmente, hay 2 maneras de calcular el vector de resultados, mediante
+  # el método Jacobi o Gauss-Seidel. La manera de especificar qué método se
+  # quiere emplear es con el parámetro: str_Metodo que se emplea de la
+  # siguiente manera:
+  # Si el valor de str_Metodo es 'J', se emplea el método Jacobi
+  # Si el valor de str_Metodo es 'GS', se emplea el método Gauss-Seidel
+  #
+  # Parámetros
+  # ----------
+  # nbr_MaxIteraciones : número
+  #    Máximo número de iteraciones a alcanzar
+  # n : Número
+  #    Dimensión de filas o columnas de la matriz
+  # mtrx_A : matriz
+  #    Matriz a evaluar
+  # vct_B : vector
+  #    Vector de resultados del sistema de ecuaciones
+  # vct_X0 : vector
+  #    Vector de aproximaciones
+  # nbr_Threshold : número
+  #    Diferencia mínima a la que se quiere llegar entre iteraciones para
+  #    considerar que el método ha convergido
+  # str_Metodo : cadena
+  #    Cadena mediante la cual se especifica el método que se empleará para
+  #    actualizar el vector de aproximaciones.
+  #
+  # Regresa
+  # -------
+  # vector
+  #    El vector de aproximaciones actualizado luego del proceso de iteraciones
+  #
 
   # Inicializamos los vectores de control
   vct_X_Act <- vct_X0
@@ -159,6 +266,22 @@ funcObtenerVctRslt <- function(nbr_MaxIteraciones, n, mtrx_A, vct_B, vct_X0, nbr
 }
 
 funcInterCambiarFilasVct <- function(vctOrigen, nbr_FilaOrigen, nbr_FilaDestino){
+  # Intercambia las filas de un vector
+  #
+  # Parámetros
+  # ----------
+  # mtrx_A : vector
+  #    El vector donde se realizará el intercambio de filas
+  # nbr_FilaOrigen : número
+  #    Índice de la fila origen que se moverá a la fila destino
+  # nbr_FilaDestino : número
+  #    Índice de la fila destino que se moverá a la fila origen
+  #
+  # Regresa
+  # -------
+  # vector
+  #    El vector con los valores intercambiados
+  #
 
   # Se guarda el valor destino
   nbr_ValorTmp <- vctOrigen[nbr_FilaDestino]
@@ -175,6 +298,22 @@ funcInterCambiarFilasVct <- function(vctOrigen, nbr_FilaOrigen, nbr_FilaDestino)
 }
 
 funcInterCambiarFilasMtrx <- function(mtrx, nbr_FilaOrigen, nbr_FilaDestino, nbr_Cols){
+  # Intercambia las filas de una matriz
+  #
+  # Parámetros
+  # ----------
+  # mtrx : matriz
+  #    La matriz donde se realizará el intercambio de filas
+  # nbr_FilaOrigen : número
+  #    Índice de la fila origen que se moverá a la fila destino
+  # nbr_FilaDestino : número
+  #    Índice de la fila destino que se moverá a la fila origen
+  #
+  # Regresa
+  # -------
+  # matriz
+  #    La matriz con los valores intercambiados
+  #
 
   # Se guarda el valor destino
   vct_FilaTmp <- mtrx[nbr_FilaDestino,1:nbr_Cols]
@@ -191,6 +330,25 @@ funcInterCambiarFilasMtrx <- function(mtrx, nbr_FilaOrigen, nbr_FilaDestino, nbr
 }
 
 funcOrdenarEcuaciones <- function(mtrx_A, vct_B){
+  # Ordena las ecuaciones del sistema buscando que no quede ningún cero
+  # sobre la diagonal principal (no hay garantía de que no quede algún
+  # cero sobre la diagonal). Para saber qué fila tomar, se hace una búsqueda
+  # sobre cada columna preguntando por la norma infinito de cada vector-columna.
+  # Puesto que el sistema de ecuaciones consta tanto de variables como de
+  # resultados, es necesario tambén el re-acomodo del vector de resultados.
+  #
+  # Parámetros
+  # ----------
+  # mtrx_A : matriz
+  #    La matriz que se va a ordenar
+  # vct_B : vector
+  #    El vector que se va a ordenar.
+  #
+  # Regresa
+  # -------
+  # list
+  #    Una lista que contiene la matriz a evaluar y el vector de resultados.
+  #
 
   # Variables que se usan dentro de la funcion
   nbr_Filas <- nrow(mtrx_A)
@@ -292,53 +450,59 @@ funcOrdenarEcuaciones <- function(mtrx_A, vct_B){
 }
 
 funcResolverSE <- function(mtrx_A, vct_B, vct_X0, nbr_MaxIteraciones, nbr_Threshold, str_Metodo){
+  # Resuleve un sistema de ecuaciones lineales mediante el método de Jacobi
+  # o de Gauss-Seidel. El sistema de ecuaciones sólo se procesará si pasa
+  # todas las validaciones requeridas.
+  #
+  # Parámetros
+  # -------
+  # mtrx_A : matriz
+  #    Matriz a evaluar
+  # vct_B : vector
+  #    Vector de resultados del sistema de ecuaciones
+  # vct_X0 : vector
+  #    Vector de aproximaciones
+  # nbr_MaxIteraciones : número
+  #    Máximo número de iteraciones a alcanzar
+  # nbr_Threshold : número
+  #    Diferencia mínima a la que se quiere llegar entre iteraciones para
+  #    considerar que el método ha convergido
+  # str_Metodo : cadena
+  #    Cadena mediante la cual se especifica el método que se empleará para
+  #    actualizar el vector de aproximaciones.
+  #
+  # Regresa
+  # -------
+  # vector
+  #    El vector de aproximaciones luego del proceso de iteraciones
 
-  if (str_Metodo == 'J' || str_Metodo == 'GS'){
+  # Se agrega condicón para validar que la matriz no sea singular
+  if(!is.singular.matrix(mtrx_A)){
 
-    if (str_Metodo=='J'){
-      print('Solucion mediante metodo de Jacobi')
-    }
-    if (str_Metodo=='GS'){
-      print('Solucion mediante metodo de Gauss-Seidel')
-    }
+    if (str_Metodo == 'J' || str_Metodo == 'GS'){
 
-    print('Matriz A:')
-    print(mtrx_A)
+      if (str_Metodo=='J'){
+        print('Solucion mediante metodo de Jacobi')
+      }
+      if (str_Metodo=='GS'){
+        print('Solucion mediante metodo de Gauss-Seidel')
+      }
 
-    print('Vector b:')
-    print(vct_B)
+      print('Matriz A:')
+      print(mtrx_A)
 
-    # Se aplican las validaciones de manera anidada
-    if (funcEsVectorValido(mtrx_A, vct_B)){
+      print('Vector b:')
+      print(vct_B)
 
-      if (funcEsVectorValido(mtrx_A, vct_X0)){
+      # Se aplican las validaciones de manera anidada
+      if (funcEsVectorValido(mtrx_A, vct_B)){
 
-        if (funcEsMatrizCuadrada(mtrx_A) == TRUE){
+        if (funcEsVectorValido(mtrx_A, vct_X0)){
 
-          # Obtenemos la n de la matriz
-          n <- nrow(mtrx_A)
+          if (funcEsMatrizCuadrada(mtrx_A) == TRUE){
 
-          if (funcHayCeroEnDiagonal(mtrx_A) == FALSE){
-
-            # Se manda a llamar la función que obtendrá la aproximación
-            vct_XRslt <- funcObtenerVctRslt(nbr_MaxIteraciones, n, mtrx_A, vct_B, vct_X0, nbr_Threshold, str_Metodo)
-
-            # Se imprime el resultado
-            print('Resultado final: ')
-            print(vct_XRslt)
-
-          } else {
-            print('La matriz tiene algun cero en la diagonal, comienza ordenamiento')
-
-            lt_Obj <- funcOrdenarEcuaciones(mtrx_A, vct_B)
-            mtrx_A <- lt_Obj$matriz
-            vct_B <- lt_Obj$vector
-
-            print('Matriz ordenada:')
-            print(mtrx_A)
-
-            print('Vector ordenado:')
-            print(vct_B)
+            # Obtenemos la n de la matriz
+            n <- nrow(mtrx_A)
 
             if (funcHayCeroEnDiagonal(mtrx_A) == FALSE){
 
@@ -349,24 +513,53 @@ funcResolverSE <- function(mtrx_A, vct_B, vct_X0, nbr_MaxIteraciones, nbr_Thresh
               print('Resultado final: ')
               print(vct_XRslt)
 
+              vct_XRslt
+
             } else {
-              print('Pese al reordenamiento, aun hay ceros en la diagonal')
+              print('La matriz tiene algun cero en la diagonal, comienza ordenamiento')
+
+              lt_Obj <- funcOrdenarEcuaciones(mtrx_A, vct_B)
+              mtrx_A <- lt_Obj$matriz
+              vct_B <- lt_Obj$vector
+
+              print('Matriz ordenada:')
+              print(mtrx_A)
+
+              print('Vector ordenado:')
+              print(vct_B)
+
+              if (funcHayCeroEnDiagonal(mtrx_A) == FALSE){
+
+                # Se manda a llamar la función que obtendrá la aproximación
+                vct_XRslt <- funcObtenerVctRslt(nbr_MaxIteraciones, n, mtrx_A, vct_B, vct_X0, nbr_Threshold, str_Metodo)
+
+                # Se imprime el resultado
+                print('Resultado final: ')
+                print(vct_XRslt)
+
+                vct_XRslt
+
+              } else {
+                print('Pese al reordenamiento, aun hay ceros en la diagonal')
+              }
+
             }
 
+          } else {
+              print('La matriz no cumple con ser de dimensiones nxn')
           }
-
         } else {
-            print('La matriz no cumple con ser de dimensiones nxn')
+          print('El vector de aproximaciones no es de las dimensiones esperadas')
         }
       } else {
-        print('El vector de aproximaciones no es de las dimensiones esperadas')
+        print('El vector de resultados no es de las dimensiones esperadas')
       }
-    } else {
-      print('El vector de resultados no es de las dimensiones esperadas')
-    }
 
+    }else{
+      print("El metodo especificado no es valido, se espera 'GS' para Gauss-Seidel o 'J' para Jacobi")
+    }
   }else{
-    print('El metodo especificado no es valido, se espera "GS" para Gauss-Seidel o "J" para Jacobi')
+    print('La matriz no puede ser singular')
   }
 }
 
@@ -417,5 +610,5 @@ str_Metodo <- 'GS'
 ########################## Flujo principal ##########################
 
 # Se manda a llamar la función que contiene las validaciones y ejecución
-# del método de Jacobi
-funcResolverSE(mtrx_A, vct_B, vct_X0, nbr_MaxIteraciones, nbr_Threshold, str_Metodo)
+# del método de Jacobi o Gauss-Seide, según se indique
+vct_Solucion <- funcResolverSE(mtrx_A, vct_B, vct_X0, nbr_MaxIteraciones, nbr_Threshold, str_Metodo)
