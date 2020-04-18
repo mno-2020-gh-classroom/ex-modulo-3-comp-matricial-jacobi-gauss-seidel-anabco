@@ -1,6 +1,35 @@
 
 # Examen de cómputo matricial equipo Jacobi, Gauss-Seidel
 
+El equipo creado por el profesor está compuesto por seis integrantes: 
+
+| Alumno | Equipo |
+|--------|--------|
+| Marco  | Programador |
+| Mario  | Programador |
+| Elizabeth | Revisor  |
+| Itzel | Revisor |
+| Oscar | Revisor  |
+| Ana   | Project Manager |
+
+El proyecto se dividió en 4 milestones: 
++ Definción de equipo y forma de trabajo. El objetivo es definir los roles y responsabilidades. El project manager debe explicar cómo funciona la metodología SCRUM así como el project board. 
++ Milestone1: méotdo de Jacobi: entendimiento, programación y pruebas del método. 
++ Milestone2: método de Gauss Seidel: entendimiento, programación y pruebas del método. 
++ Milestone3: método de eliminación por bloques: entendimiento, programación y pruebas del método. 
++ Milestone4: Documentación: documentación de los 3 métodos. 
+
+En el repositorio se pueden encontar las siguentes carpetas y archivos:
+
+**Archivos**
++ Introducción SCRUM: se presenta, a muy alto nivel, la metodología SCUM así como las reuniones que se tienen que llevar a cabo. 
++ Parámetros_modelos: indica los parámetros que los programadores debería considerar en el desarrollo de los programas. 
+
+**Carpetas**
++ Revisiones
+
+Se crea una liga de Binder para realizas las purebas de los 3 métodos. 
+
 **Liga de Binder para las pruebas del programa de Jacobi, Gauss-Seidel y Eliminación por Bloques:** [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/shimanteko/for_binders/master?urlpath=lab/tree/home/jovyan/Jacobi_GaussSeidel_Bloques.ipynb)
 
 El equipo creado por el prof se subdivide en tres grupos: grupo de programación, grupo de revisión y una persona project manager. Esta división está inspirada en el *framework* [scrum](https://www.youtube.com/watch?v=b02ZkndLk1Y&feature=emb_logo) en un ambiente laboral real (y en esta práctica estaremos simplificando tal *framework*).  
