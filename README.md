@@ -1,7 +1,7 @@
 
 # Examen de cómputo matricial equipo Jacobi, Gauss-Seidel
 
-**Liga de Binder para las pruebas del programa de Jacobi:** [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/shimanteko/for_binders/master?urlpath=lab/tree/home/jovyan/Jacobi_GaussSeindel_Bloques.ipynb)
+**Liga de Binder para las pruebas del programa de Jacobi:** [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/shimanteko/for_binders/master?urlpath=lab/tree/home/jovyan/Jacobi_GaussSeidel_Bloques.ipynb)
 
 El equipo creado por el prof se subdivide en tres grupos: grupo de programación, grupo de revisión y una persona project manager. Esta división está inspirada en el *framework* [scrum](https://www.youtube.com/watch?v=b02ZkndLk1Y&feature=emb_logo) en un ambiente laboral real (y en esta práctica estaremos simplificando tal *framework*).  
 
