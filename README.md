@@ -4,7 +4,7 @@
 
 ## Equipo de trabajo
 
-El equipo está integrado por seis personas: un prohect manager, dos programadores y tres revisores. 
+El equipo está integrado por seis personas: un project manager, dos programadores y tres revisores. 
 
 | Alumno | Equipo |
 |--------|--------|
@@ -22,7 +22,7 @@ El proyecto se desarrollará bajo una metodología ágil siguiendo el marco de t
 Se dividió en cuatro milestones: 
 
 + Definción de equipo y forma de trabajo. El objetivo es definir los roles y responsabilidades. El project manager debe explicar cómo funciona scrum así como el project board. 
-+ Milestone1: méotdo de Jacobi: entendimiento, programación y pruebas del método. 
++ Milestone1: método de Jacobi: entendimiento, programación y pruebas del método. 
 + Milestone2: método de Gauss Seidel: entendimiento, programación y pruebas del método. 
 + Milestone3: método de eliminación por bloques: entendimiento, programación y pruebas del método. 
 + Milestone4: Documentación: documentación de los 3 métodos y revisiones finales de los archivos. 
@@ -38,7 +38,7 @@ Las tareas e issues detectados durante el desarrollo del proyecto están organiz
 **Carpetas**
 + Revisiones
 
-Se crea una liga de Binder para realizas las purebas de los 3 métodos. 
+Se crea una liga de Binder para realizas las pruebas de los 3 métodos. 
 
 **Liga de Binder para las pruebas del programa de Jacobi, Gauss-Seidel y Eliminación por Bloques:** [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/shimanteko/for_binders/master?urlpath=lab/tree/home/jovyan/Jacobi_GaussSeidel_Bloques.ipynb)
 
