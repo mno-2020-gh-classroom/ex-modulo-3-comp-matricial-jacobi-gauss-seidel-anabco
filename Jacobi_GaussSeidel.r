@@ -322,6 +322,10 @@ funcInterCambiarFilasMtrx <- function(mtrx, nbr_FilaOrigen, nbr_FilaDestino, nbr
   #    La matriz con los valores intercambiados
   #
 
+  # print('funcInterCambiarFilasMtrx')
+  # print(nbr_FilaOrigen)
+  # print(nbr_FilaDestino)
+
   # Se guarda el valor destino
   vct_FilaTmp <- mtrx[nbr_FilaDestino,1:nbr_Cols]
 
@@ -362,11 +366,11 @@ funcOrdenarEcuaciones <- function(mtrx_A, vct_B){
   nbr_Cols <- ncol(mtrx_A)
 
   # Se barren todas las columnas (iterador j)
-  for (j in 1:nbr_Cols){
+  for (j in 1:(nbr_Cols-1)){
     # print('Inicia iteracion')
 
     # Se saca el vector-columna que se usará esta iteración
-    vct_Col = mtrx_A[1:nbr_Cols,j]
+    vct_Col = mtrx_A[j:nbr_Cols,j]
 
     # Mostramos el vector-columna con el que trabajaremos
     # print(vct_Col)
@@ -378,6 +382,12 @@ funcOrdenarEcuaciones <- function(mtrx_A, vct_B){
     # Se pregunta si el valor es único en el vector-columna
     vct_OrdDesc <- sort(vct_Col, decreasing = TRUE)
     # print(vct_OrdDesc)
+
+    # Preguntamos si el primer elemento del vector es diferente a la norma infinito
+    # (eso significará que la norma infinito proviene de un número negativo)
+    if (nbr_Norm != vct_OrdDesc[1]){
+      vct_OrdDesc <- sort(vct_Col, decreasing = FALSE)
+    }
 
     # Si sí es único:
     if (vct_OrdDesc[1] != vct_OrdDesc[2]){
@@ -395,6 +405,7 @@ funcOrdenarEcuaciones <- function(mtrx_A, vct_B){
 
       }
 
+      nbr_Index <- nbr_Index + (j-1)
       # Para realizar el intercambio de filas, nuestra
       # fila origen será: nbr_Index, y la fila destino: j
       mtrx_A <- funcInterCambiarFilasMtrx(mtrx_A, nbr_Index, j, nbr_Cols)
@@ -407,14 +418,16 @@ funcOrdenarEcuaciones <- function(mtrx_A, vct_B){
 
       vct_Bool1 <- (vct_Col==nbr_Norm)
 
-      mtrx_Tmp <- mtrx_A[vct_Bool1,1:nbr_Cols]
+
+      mtrx_Tmp <- mtrx_A[j:nbr_Cols, (j+1):nbr_Cols]
+      mtrx_Tmp <- mtrx_Tmp[vct_Bool1, 1:(nbr_Cols-j)]
       #print(mtrx_Tmp)
 
       # Barremos el resto de las columans para el desempate
-      for (jj in (j+1):nbr_Cols){
+      for (jj in 1:(nbr_Cols-j)){
 
-        vct_ColDesempate <- mtrx_Tmp[,jj]
-        # print(paste0('vct_ColDesempate: ', vct_ColDesempate))
+        # print(jj)
+        vct_ColDesempate <- mtrx_Tmp[jj:(nbr_Cols-j+1),jj]
 
         # Buscaremos el valor mínimo de la siguiente columna
         vct_OrdAsc <- sort(vct_ColDesempate)
@@ -428,12 +441,8 @@ funcOrdenarEcuaciones <- function(mtrx_A, vct_B){
           vct_Bool2 <- (vct_ColDesempate == vct_OrdAsc[1])
           # print(vct_Bool2)
 
-          vct_FilaDesempate <- mtrx_Tmp[vct_Bool2]
-
-          # Ya que se tiene la fila mínima del empate, se obtiene su indice
-          # en la matriz_A
-          vct_Bool3 <- rowSums(mtrx_A == vct_FilaDesempate[col(mtrx_A)]) == ncol(mtrx_A)
-          nbr_Index <- match(TRUE,vct_Bool3)
+          nbr_Index <- match(TRUE,vct_Bool2)
+          nbr_Index <- nbr_Index + (j-1)
 
           # Para realizar el intercambio de filas, nuestra
           # fila origen será: nbr_Index, y la fila destino: j
@@ -566,7 +575,7 @@ funcResolverSE <- function(mtrx_A, vct_B, vct_X0, nbr_MaxIteraciones, nbr_Thresh
       print("El metodo especificado no es valido, se espera 'GS' para Gauss-Seidel o 'J' para Jacobi")
     }
   }else{
-    print('La matriz no puede ser singular')
+    print('La matriz es singular, por lo tanto no hay solución al sistema y el método se detiene')
   }
 
   # Se devuelve el vector de resultados
