@@ -1,5 +1,5 @@
 ########################## Información general ##########################
-# Los métodos de Jacobi y Gauss_Seidel permiten resolver
+# Los métodos de Jacobi y Gauss_Seidel, permiten resolver
 # sistemas de ecuaciones del tipo Ax=b.
 # Esto se logra mediante un proceso iterativo.
 # El proceso va a iterar hasta que la diferencia entre el vector de resultados
@@ -15,6 +15,7 @@ if(!require(matrixcalc)){
 }
 library('matrixcalc')
 library('pracma')
+library('Matrix')
 
 ########################## Declaración de funciones ##########################
 
@@ -36,7 +37,7 @@ funcEsVectorValido <- function(mtrx, vct){
   #    vector es igual o no a la cantidad de filas de la matriz a evaluar.
   #
 
-  # El vector b debe tener la misma cantidad de filas que la matriz
+  # El vector b, debe tener la misma cantidad de filas que la matriz
   bool_VectorValido = FALSE
   if (nrow(mtrx) == length(vct)){
     bool_VectorValido = TRUE
@@ -46,8 +47,9 @@ funcEsVectorValido <- function(mtrx, vct){
 
 }
 
-# Valida que sea cuadrada la matriz (nxn)
+# Valida que sea cuadrada la matriz
 funcEsMatrizCuadrada <- function(mtrx){
+  # Valida si la matriz es cuadrada (nxn)
   #
   # Parámetros
   # ----------
@@ -112,7 +114,7 @@ funcObtenerComponente <- function(i, n, mtrx_A, vct_X, vct_B){
   # Parámetros
   # ----------
   # i : número
-  #    Índidce del componente (del vector de aproximaciones) que se quiere obtener
+  #    Indidce del componente (del vector de aproximaciones) que se quiere obtener
   # n : número
   #    Dimensión de filas o columnas de la matriz
   # mtrx_A: matriz
@@ -152,7 +154,7 @@ funcObtenerComponente <- function(i, n, mtrx_A, vct_X, vct_B){
   # Terminada la sumatoria, se prepara un término extra
   nbr_Termino2 = (vct_B[i] / mtrx_A[i,i])
 
-  # El resultado final es lo acumulado de la sumatoria más el otro término
+  # El resultado final, es lo acumulado de la sumatoria más el otro término
   nbr_Final = nbr_Sumatoria + nbr_Termino2
 
   # Regresamos el resultado
@@ -168,11 +170,11 @@ funcObtenerVctRslt <- function(nbr_MaxIteraciones, n, mtrx_A, vct_B, vct_X0, nbr
   # siguientes 2 condiciones:
   #   1: Alcanzar el máximo número de iteraciones (especificado en el parámetro
   #     nbr_MaxIteraciones)
-  #   2: Lograr llegar a una diferencia entre iteraciones menor al threshold
+  #   2: Lograr llegar a un diferencia entre iteraciones menor al threshold
   #     que se especifica en el parámetro nbr_Threshold.
   # En cuanto se cumpla alguna de dichas condiciones, termina el proceso de
   # iteraciones.
-  # Adicionalmente, hay 2 maneras de calcular el vector de resultados: mediante
+  # Adicionalmente, hay 2 maneras de calcular el vector de resultados, mediante
   # el método Jacobi o Gauss-Seidel. La manera de especificar qué método se
   # quiere emplear es con el parámetro: str_Metodo que se emplea de la
   # siguiente manera:
@@ -234,7 +236,6 @@ funcObtenerVctRslt <- function(nbr_MaxIteraciones, n, mtrx_A, vct_B, vct_X0, nbr
 
     print(vct_X_Act)
 
-    # Se calcula la convergencia y se usa la norma infinito
     nbr_Numerador <- Norm(vct_X_Act - vct_X_Ant, p = Inf)
     nbr_Denominador <- Norm(vct_X_Act, p = Inf)
 
@@ -257,8 +258,8 @@ funcObtenerVctRslt <- function(nbr_MaxIteraciones, n, mtrx_A, vct_B, vct_X0, nbr
       break
     }
 
-    # El vector resultado (k) lo usamos como vector anterior (k-1) para la siguiente
-    # iteración
+    # El vector resultado (k), lo usamos como vector anterior (k-1) para la sigueinte
+    # iteraación
     vct_X_Ant <- vct_X_Act
 
   }
@@ -365,9 +366,13 @@ funcOrdenarEcuaciones <- function(mtrx_A, vct_B){
   nbr_Filas <- nrow(mtrx_A)
   nbr_Cols <- ncol(mtrx_A)
 
+  bool_NrmInfPos <- TRUE
+
   # Se barren todas las columnas (iterador j)
   for (j in 1:(nbr_Cols-1)){
-    # print('Inicia iteracion')
+    #print('Inicia iteracion')
+    #print(j)
+    bool_NrmInfPos <- TRUE
 
     # Se saca el vector-columna que se usará esta iteración
     vct_Col = mtrx_A[j:nbr_Cols,j]
@@ -387,6 +392,7 @@ funcOrdenarEcuaciones <- function(mtrx_A, vct_B){
     # (eso significará que la norma infinito proviene de un número negativo)
     if (nbr_Norm != vct_OrdDesc[1]){
       vct_OrdDesc <- sort(vct_Col, decreasing = FALSE)
+      bool_NrmInfPos <- FALSE
     }
 
     # Si sí es único:
@@ -414,34 +420,100 @@ funcOrdenarEcuaciones <- function(mtrx_A, vct_B){
       # print(mtrx_A)
 
     } else { # Si no es único:
-      #print('Hay empate')
+
+      # Preguntamos si la norma infinito viene de un positivo o negativo
+      if (bool_NrmInfPos==FALSE){
+        # La multiplicamos por -1 para que haya coincidencias
+        nbr_Norm = nbr_Norm * -1
+      }
+
+      #if (j==94) {
+        #print('Hay empate')
+
+        #print('mtrx_A')
+        #print(mtrx_A)
+
+        #print('nbr_Norm')
+        #print(nbr_Norm)
+
+        #print('vct_Col')
+        #print(vct_Col)
+      #}
 
       vct_Bool1 <- (vct_Col==nbr_Norm)
 
+      # Si se trata de la última columna, es un caso especial
+      if ((j+1)==nbr_Cols){
+        #print('Caso especial')
+        mtrx_Tmp1 <- mtrx_A[j:nbr_Cols, (j+1):nbr_Cols]
+        mtrx_Tmp1 <- rbind(mtrx_Tmp1)
+        mtrx_Tmp1 <- t(mtrx_Tmp1)
 
-      mtrx_Tmp <- mtrx_A[j:nbr_Cols, (j+1):nbr_Cols]
-      mtrx_Tmp <- mtrx_Tmp[vct_Bool1, 1:(nbr_Cols-j)]
-      #print(mtrx_Tmp)
+        mtrx_Tmp2 <- mtrx_Tmp1[vct_Bool1, 1:(nbr_Cols-j)]
+        mtrx_Tmp2 <- rbind(mtrx_Tmp2)
+        mtrx_Tmp2 <- t(mtrx_Tmp2)
+
+      }else{ # Este es el caso normal
+        mtrx_Tmp1 <- mtrx_A[j:nbr_Cols, (j+1):nbr_Cols]
+        mtrx_Tmp2 <- mtrx_Tmp1[vct_Bool1, 1:(nbr_Cols-j)]
+      }
+
+      #if (j==94) {
+        #print('mtrx_Tmp1 pt1')
+        #print(mtrx_Tmp1)
+        #print('dim')
+        #print(dim(mtrx_Tmp1))
+        #print('vct_Bool1')
+        #print(vct_Bool1)
+        #print('mtrx_Tmp2 pt2')
+        #print(mtrx_Tmp2)
+        #print('dim')
+        #print(dim(mtrx_Tmp2))
+      #}
+
 
       # Barremos el resto de las columans para el desempate
       for (jj in 1:(nbr_Cols-j)){
-
-        # print(jj)
-        vct_ColDesempate <- mtrx_Tmp[jj:(nbr_Cols-j+1),jj]
+        #print('j')
+        #print(j)
+        #print('jj')
+        #print(jj)
+        #print('nrow(mtrx_Tmp2)')
+        #print(nrow(mtrx_Tmp2))
+        vct_ColDesempate <- mtrx_Tmp2[jj:nrow(mtrx_Tmp2),jj]
 
         # Buscaremos el valor mínimo de la siguiente columna
         vct_OrdAsc <- sort(vct_ColDesempate)
-        # print(vct_OrdAsc)
+        #print(vct_OrdAsc)
 
         # Si el  mínimo es único:
         if (vct_OrdAsc[1] != vct_OrdAsc[2]){
 
-          # print('es unico')
+          #print('es unico')
           # Generamos el vector que nos ayudará a obtener las filas a desempatar
           vct_Bool2 <- (vct_ColDesempate == vct_OrdAsc[1])
-          # print(vct_Bool2)
+          #print(vct_Bool2)
 
-          nbr_Index <- match(TRUE,vct_Bool2)
+          # Ya que tenemos el vector que dice cuál es la fila que debemos tomar
+          # vamos yendo hacia atrás para averiguar el índice relativo de
+          # en columna con la que estamos trabajando
+          #print('Comienza regreso')
+          vct_Tmp1 <- mtrx_Tmp2[vct_Bool2]
+          #print('vct_Tmp1')
+          #print(vct_Tmp1)
+
+          vct_Bool3 <- (vct_Tmp1==mtrx_Tmp1)
+          #print('vct_Bool3')
+          #print(vct_Bool3)
+
+          vct_bool4 <- apply(mtrx_Tmp1, 1, function(x) all(x==vct_Tmp1))
+          #print('vct_bool4')
+          #print(vct_bool4)
+
+          nbr_Index <- match(TRUE, vct_bool4)
+          # nbr_Index <- match(TRUE,vct_Bool2)
+          #print('nbr_Index')
+          #print(nbr_Index)
           nbr_Index <- nbr_Index + (j-1)
 
           # Para realizar el intercambio de filas, nuestra
@@ -494,12 +566,11 @@ funcResolverSE <- function(mtrx_A, vct_B, vct_X0, nbr_MaxIteraciones, nbr_Thresh
 
   # Se agrega condicón para validar que la matriz no sea singular
 
-# Se inicializa el vector de resultados
+  # Se inicializa el vector de resultados
   vct_XRslt <- rep(NA, size(vct_X0)[2])
 
   if(!is.singular.matrix(mtrx_A)){
-      
-    # Se lee el método a usar
+
     if (str_Metodo == 'J' || str_Metodo == 'GS'){
 
       if (str_Metodo=='J'){
@@ -537,7 +608,10 @@ funcResolverSE <- function(mtrx_A, vct_B, vct_X0, nbr_MaxIteraciones, nbr_Thresh
             } else {
               print('La matriz tiene algun cero en la diagonal, comienza ordenamiento')
 
-              # Se ordena la matriz
+              # Respaldo del orden original
+              mtrx_Original <- mtrx_A
+              vct_Original <- vct_B
+
               lt_Obj <- funcOrdenarEcuaciones(mtrx_A, vct_B)
               mtrx_A <- lt_Obj$matriz
               vct_B <- lt_Obj$vector
@@ -554,34 +628,45 @@ funcResolverSE <- function(mtrx_A, vct_B, vct_X0, nbr_MaxIteraciones, nbr_Thresh
                 vct_XRslt <- funcObtenerVctRslt(nbr_MaxIteraciones, n, mtrx_A, vct_B, vct_X0, nbr_Threshold, str_Metodo)
 
                 # Se imprime el resultado
-                print('Resultado final: ')
+                print('Resultado final (nuevo orden): ')
                 print(vct_XRslt)
 
-                #En caso de encontrar un problema, se imprime
+                # Se reordena el vector de resultados para entregarlo en el mismo
+                # orden en que fue solicitado
+                nbr_Filas <-size(vct_XRslt)[2]
+                for (i in 1:nbr_Filas){
+                  for (j in 1:nbr_Filas){
+                    if (sum(mtrx_A[i,]==mtrx_Original[j,]) == nbr_Filas){
+                      mtrx_A <- funcInterCambiarFilasMtrx(mtrx_A, i, j, nbr_Filas)
+                      vct_XRslt <- funcInterCambiarFilasVct(vct_XRslt, i, j)
+                    }
+                  }
+                }
+                print('Resultado final (orden original): ')
+                print(vct_XRslt)
+
               } else {
                 print('Pese al reordenamiento, aun hay ceros en la diagonal')
-                }
+              }
+
             }
 
           } else {
               print('La matriz no cumple con ser de dimensiones nxn')
-            }
-            
+          }
         } else {
           print('El vector de aproximaciones no es de las dimensiones esperadas')
-          }
-          
+        }
       } else {
         print('El vector de resultados no es de las dimensiones esperadas')
-        }
-
-    } else{
-      print("El metodo especificado no es valido, se espera 'GS' para Gauss-Seidel o 'J' para Jacobi")
       }
-      
-  } else{
-    print('La matriz no puede ser singular')
+
+    }else{
+      print("El metodo especificado no es valido, se espera 'GS' para Gauss-Seidel o 'J' para Jacobi")
     }
+  }else{
+    print('La matriz es singular, por lo tanto no hay solución al sistema y el método se detiene')
+  }
 
   # Se devuelve el vector de resultados
   vct_XRslt
@@ -629,11 +714,11 @@ nbr_MaxIteraciones <- 100
 nbr_Threshold <- 10**(-3)
 
 # Método a utilizar
-# str_Metodo <- 'J'
+#str_Metodo <- 'J'
 str_Metodo <- 'GS'
 
 ########################## Flujo principal ##########################
 
 # Se manda a llamar la función que contiene las validaciones y ejecución
-# del método de Jacobi o Gauss-Seidel, según se indique
+# del método de Jacobi o Gauss-Seide, según se indique
 vct_Solucion <- funcResolverSE(mtrx_A, vct_B, vct_X0, nbr_MaxIteraciones, nbr_Threshold, str_Metodo)
