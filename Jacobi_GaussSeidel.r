@@ -20,7 +20,7 @@ library('Matrix')
 ########################## Declaración de funciones ##########################
 
 funcEsVectorValido <- function(mtrx, vct){
-  # Valida si el vector (ya se de resultados o aproximaciones) cuenta
+  # Valida si el vector (ya sea de resultados o aproximaciones) cuenta
   # con la misma cantidad de filas que la matriz a evaluar.
   #
   # Parámetros
@@ -28,7 +28,7 @@ funcEsVectorValido <- function(mtrx, vct){
   # mtrx : matriz
   #    La matriz a evaluar
   # vct : vector
-  #    El vector cuyo # de filas se comparará contra las de la matriz a evaluar
+  #    El vector cuyo número de filas se comparará contra las de la matriz a evaluar
   #
   # Regresa
   # -------
@@ -37,7 +37,7 @@ funcEsVectorValido <- function(mtrx, vct){
   #    vector es igual o no a la cantidad de filas de la matriz a evaluar.
   #
 
-  # El vector b, debe tener la misma cantidad de filas que la matriz
+  # El vector b debe tener la misma cantidad de filas que la matriz
   bool_VectorValido = FALSE
   if (nrow(mtrx) == length(vct)){
     bool_VectorValido = TRUE
@@ -77,7 +77,7 @@ funcEsMatrizCuadrada <- function(mtrx){
 
  # Busca algún cero en la diagonal principal
 funcHayCeroEnDiagonal <- function(mtrx){
-  # Valida si se presenta alún cero en la diagonal de la matriz
+  # Valida si se presenta algún cero en la diagonal de la matriz
   #
   # Parámetros
   # ----------
@@ -109,12 +109,12 @@ funcHayCeroEnDiagonal <- function(mtrx){
 
 # Función que obtiene cada componente del vector
 funcObtenerComponente <- function(i, n, mtrx_A, vct_X, vct_B){
-  # Obtiene 1 solo componente del vector de aproximaciones
+  # Obtiene un solo componente del vector de aproximaciones
   #
   # Parámetros
   # ----------
   # i : número
-  #    Indidce del componente (del vector de aproximaciones) que se quiere obtener
+  #    Indíce del componente (del vector de aproximaciones) que se quiere obtener
   # n : número
   #    Dimensión de filas o columnas de la matriz
   # mtrx_A: matriz
@@ -154,7 +154,7 @@ funcObtenerComponente <- function(i, n, mtrx_A, vct_X, vct_B){
   # Terminada la sumatoria, se prepara un término extra
   nbr_Termino2 = (vct_B[i] / mtrx_A[i,i])
 
-  # El resultado final, es lo acumulado de la sumatoria más el otro término
+  # El resultado final es lo acumulado de la sumatoria más el otro término
   nbr_Final = nbr_Sumatoria + nbr_Termino2
 
   # Regresamos el resultado
@@ -258,7 +258,7 @@ funcObtenerVctRslt <- function(nbr_MaxIteraciones, n, mtrx_A, vct_B, vct_X0, nbr
       break
     }
 
-    # El vector resultado (k), lo usamos como vector anterior (k-1) para la sigueinte
+    # El vector resultado (k) lo usamos como vector anterior (k-1) para la sigueinte
     # iteraación
     vct_X_Ant <- vct_X_Act
 
@@ -362,7 +362,7 @@ funcOrdenarEcuaciones <- function(mtrx_A, vct_B){
   #    Una lista que contiene la matriz a evaluar y el vector de resultados.
   #
 
-  # Variables que se usan dentro de la funcion
+  # Variables que se usan dentro de la función
   nbr_Filas <- nrow(mtrx_A)
   nbr_Cols <- ncol(mtrx_A)
 
@@ -374,7 +374,7 @@ funcOrdenarEcuaciones <- function(mtrx_A, vct_B){
     #print(j)
     bool_NrmInfPos <- TRUE
 
-    # Se saca el vector-columna que se usará esta iteración
+    # Se saca el vector-columna que se usará en esta iteración
     vct_Col = mtrx_A[j:nbr_Cols,j]
 
     # Mostramos el vector-columna con el que trabajaremos
@@ -472,7 +472,7 @@ funcOrdenarEcuaciones <- function(mtrx_A, vct_B){
       #}
 
 
-      # Barremos el resto de las columans para el desempate
+      # Barremos el resto de las columnas para el desempate
       for (jj in 1:(nbr_Cols-j)){
         #print('j')
         #print(j)
@@ -517,7 +517,7 @@ funcOrdenarEcuaciones <- function(mtrx_A, vct_B){
           nbr_Index <- nbr_Index + (j-1)
 
           # Para realizar el intercambio de filas, nuestra
-          # fila origen será: nbr_Index, y la fila destino: j
+          # fila origen será: nbr_Index y la fila destino: j
           mtrx_A <- funcInterCambiarFilasMtrx(mtrx_A, nbr_Index, j, nbr_Cols)
           vct_B <- funcInterCambiarFilasVct(vct_B, nbr_Index, j)
 
@@ -538,7 +538,7 @@ funcOrdenarEcuaciones <- function(mtrx_A, vct_B){
 }
 
 funcResolverSE <- function(mtrx_A, vct_B, vct_X0, nbr_MaxIteraciones, nbr_Threshold, str_Metodo){
-  # Resuleve un sistema de ecuaciones lineales mediante el método de Jacobi
+  # Resuelve un sistema de ecuaciones lineales mediante el método de Jacobi
   # o de Gauss-Seidel. El sistema de ecuaciones sólo se procesará si pasa
   # todas las validaciones requeridas.
   #
@@ -574,10 +574,10 @@ funcResolverSE <- function(mtrx_A, vct_B, vct_X0, nbr_MaxIteraciones, nbr_Thresh
     if (str_Metodo == 'J' || str_Metodo == 'GS'){
 
       if (str_Metodo=='J'){
-        print('Solucion mediante metodo de Jacobi')
+        print('Solución mediante metodo de Jacobi')
       }
       if (str_Metodo=='GS'){
-        print('Solucion mediante metodo de Gauss-Seidel')
+        print('Solución mediante metodo de Gauss-Seidel')
       }
 
       print('Matriz A:')
@@ -606,7 +606,7 @@ funcResolverSE <- function(mtrx_A, vct_B, vct_X0, nbr_MaxIteraciones, nbr_Thresh
               print(vct_XRslt)
 
             } else {
-              print('La matriz tiene algun cero en la diagonal, comienza ordenamiento')
+              print('La matriz tiene algún cero en la diagonal, comienza ordenamiento')
 
               # Respaldo del orden original
               mtrx_Original <- mtrx_A
@@ -646,7 +646,7 @@ funcResolverSE <- function(mtrx_A, vct_B, vct_X0, nbr_MaxIteraciones, nbr_Thresh
                 print(vct_XRslt)
 
               } else {
-                print('Pese al reordenamiento, aun hay ceros en la diagonal')
+                print('Pese al reordenamiento, aún hay ceros en la diagonal')
               }
 
             }
@@ -662,7 +662,7 @@ funcResolverSE <- function(mtrx_A, vct_B, vct_X0, nbr_MaxIteraciones, nbr_Thresh
       }
 
     }else{
-      print("El metodo especificado no es valido, se espera 'GS' para Gauss-Seidel o 'J' para Jacobi")
+      print("El método especificado no es válido, se espera 'GS' para Gauss-Seidel o 'J' para Jacobi")
     }
   }else{
     print('La matriz es singular, por lo tanto no hay solución al sistema y el método se detiene')
