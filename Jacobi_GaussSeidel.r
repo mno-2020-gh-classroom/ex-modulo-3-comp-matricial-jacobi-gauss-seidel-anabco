@@ -1,5 +1,5 @@
 ########################## Información general ##########################
-# Los métodos de Jacobi y Gauss_Seidel, permiten resolver
+# Los métodos de Jacobi y Gauss_Seidel permiten resolver
 # sistemas de ecuaciones del tipo Ax=b.
 # Esto se logra mediante un proceso iterativo.
 # El proceso va a iterar hasta que la diferencia entre el vector de resultados
@@ -36,7 +36,7 @@ funcEsVectorValido <- function(mtrx, vct){
   #    vector es igual o no a la cantidad de filas de la matriz a evaluar.
   #
 
-  # El vector b, debe tener la misma cantidad de filas que la matriz
+  # El vector b debe tener la misma cantidad de filas que la matriz
   bool_VectorValido = FALSE
   if (nrow(mtrx) == length(vct)){
     bool_VectorValido = TRUE
@@ -46,9 +46,8 @@ funcEsVectorValido <- function(mtrx, vct){
 
 }
 
-# Valida que sea cuadrada la matriz
+# Valida que sea cuadrada la matriz (nxn)
 funcEsMatrizCuadrada <- function(mtrx){
-  # Valida si la matriz es cuadrada (nxn)
   #
   # Parámetros
   # ----------
@@ -113,7 +112,7 @@ funcObtenerComponente <- function(i, n, mtrx_A, vct_X, vct_B){
   # Parámetros
   # ----------
   # i : número
-  #    Indidce del componente (del vector de aproximaciones) que se quiere obtener
+  #    Índidce del componente (del vector de aproximaciones) que se quiere obtener
   # n : número
   #    Dimensión de filas o columnas de la matriz
   # mtrx_A: matriz
@@ -153,7 +152,7 @@ funcObtenerComponente <- function(i, n, mtrx_A, vct_X, vct_B){
   # Terminada la sumatoria, se prepara un término extra
   nbr_Termino2 = (vct_B[i] / mtrx_A[i,i])
 
-  # El resultado final, es lo acumulado de la sumatoria más el otro término
+  # El resultado final es lo acumulado de la sumatoria más el otro término
   nbr_Final = nbr_Sumatoria + nbr_Termino2
 
   # Regresamos el resultado
@@ -169,11 +168,11 @@ funcObtenerVctRslt <- function(nbr_MaxIteraciones, n, mtrx_A, vct_B, vct_X0, nbr
   # siguientes 2 condiciones:
   #   1: Alcanzar el máximo número de iteraciones (especificado en el parámetro
   #     nbr_MaxIteraciones)
-  #   2: Lograr llegar a un diferencia entre iteraciones menor al threshold
+  #   2: Lograr llegar a una diferencia entre iteraciones menor al threshold
   #     que se especifica en el parámetro nbr_Threshold.
   # En cuanto se cumpla alguna de dichas condiciones, termina el proceso de
   # iteraciones.
-  # Adicionalmente, hay 2 maneras de calcular el vector de resultados, mediante
+  # Adicionalmente, hay 2 maneras de calcular el vector de resultados: mediante
   # el método Jacobi o Gauss-Seidel. La manera de especificar qué método se
   # quiere emplear es con el parámetro: str_Metodo que se emplea de la
   # siguiente manera:
@@ -235,6 +234,7 @@ funcObtenerVctRslt <- function(nbr_MaxIteraciones, n, mtrx_A, vct_B, vct_X0, nbr
 
     print(vct_X_Act)
 
+    # Se calcula la convergencia y se usa la norma infinito
     nbr_Numerador <- Norm(vct_X_Act - vct_X_Ant, p = Inf)
     nbr_Denominador <- Norm(vct_X_Act, p = Inf)
 
@@ -257,8 +257,8 @@ funcObtenerVctRslt <- function(nbr_MaxIteraciones, n, mtrx_A, vct_B, vct_X0, nbr
       break
     }
 
-    # El vector resultado (k), lo usamos como vector anterior (k-1) para la sigueinte
-    # iteraación
+    # El vector resultado (k) lo usamos como vector anterior (k-1) para la siguiente
+    # iteración
     vct_X_Ant <- vct_X_Act
 
   }
@@ -494,11 +494,12 @@ funcResolverSE <- function(mtrx_A, vct_B, vct_X0, nbr_MaxIteraciones, nbr_Thresh
 
   # Se agrega condicón para validar que la matriz no sea singular
 
-  # Se inicializa el vector de resultados
+# Se inicializa el vector de resultados
   vct_XRslt <- rep(NA, size(vct_X0)[2])
 
   if(!is.singular.matrix(mtrx_A)){
-
+      
+    # Se lee el método a usar
     if (str_Metodo == 'J' || str_Metodo == 'GS'){
 
       if (str_Metodo=='J'){
@@ -536,6 +537,7 @@ funcResolverSE <- function(mtrx_A, vct_B, vct_X0, nbr_MaxIteraciones, nbr_Thresh
             } else {
               print('La matriz tiene algun cero en la diagonal, comienza ordenamiento')
 
+              # Se ordena la matriz
               lt_Obj <- funcOrdenarEcuaciones(mtrx_A, vct_B)
               mtrx_A <- lt_Obj$matriz
               vct_B <- lt_Obj$vector
@@ -555,28 +557,31 @@ funcResolverSE <- function(mtrx_A, vct_B, vct_X0, nbr_MaxIteraciones, nbr_Thresh
                 print('Resultado final: ')
                 print(vct_XRslt)
 
+                #En caso de encontrar un problema, se imprime
               } else {
                 print('Pese al reordenamiento, aun hay ceros en la diagonal')
-              }
-
+                }
             }
 
           } else {
               print('La matriz no cumple con ser de dimensiones nxn')
-          }
+            }
+            
         } else {
           print('El vector de aproximaciones no es de las dimensiones esperadas')
-        }
+          }
+          
       } else {
         print('El vector de resultados no es de las dimensiones esperadas')
-      }
+        }
 
-    }else{
+    } else{
       print("El metodo especificado no es valido, se espera 'GS' para Gauss-Seidel o 'J' para Jacobi")
+      }
+      
+  } else{
+    print('La matriz no puede ser singular')
     }
-  }else{
-    print('La matriz es singular, por lo tanto no hay solución al sistema y el método se detiene')
-  }
 
   # Se devuelve el vector de resultados
   vct_XRslt
@@ -599,7 +604,7 @@ mtrx_A <- matrix(c( 0,3,-1,8,
                  ncol=4)
 
 vct_B <- c(15, 25, -11, 6)
-#vct_B <- c(6, 25, -11, 15)
+# vct_B <- c(6, 25, -11, 15)
 
 # Ejemplo que puso Ana en el chat
 # Matriz A
@@ -624,11 +629,11 @@ nbr_MaxIteraciones <- 100
 nbr_Threshold <- 10**(-3)
 
 # Método a utilizar
-#str_Metodo <- 'J'
+# str_Metodo <- 'J'
 str_Metodo <- 'GS'
 
 ########################## Flujo principal ##########################
 
 # Se manda a llamar la función que contiene las validaciones y ejecución
-# del método de Jacobi o Gauss-Seide, según se indique
+# del método de Jacobi o Gauss-Seidel, según se indique
 vct_Solucion <- funcResolverSE(mtrx_A, vct_B, vct_X0, nbr_MaxIteraciones, nbr_Threshold, str_Metodo)
