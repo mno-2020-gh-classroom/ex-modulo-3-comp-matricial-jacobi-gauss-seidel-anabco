@@ -3325,8 +3325,6 @@ funcResolverSE(Ad, b, x0, nbr_MaxIteraciones, nbr_Threshold, str_Metodo)
 Converge en la iteración 6 dado el threshold de $10^{-5}$. Esta matriz tiene un número de condición cercano a 1:
 
 
-Su número de condición es:
-
 ```{r}
 cond(Ad)
 ```

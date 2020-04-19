@@ -776,16 +776,16 @@ sol.lsolve$x</code></pre>
 <pre><code>##  [1] -12  -8   9 -17  19  20  19  19  29  -5</code></pre>
 <p>En este punto, es importante aclarar que la función <code>lsolve.jacobi</code> de la librería <code>Rlinsolve</code> para converger, requiere tener los renglones ordenados, esta función no los ordena. Por ejemplo, en el caso de la matriz identidad, si movemos los renglones de forma aleatoria:</p>
 <pre><code>##       [,1] [,2] [,3] [,4] [,5] [,6] [,7] [,8] [,9] [,10]
-##  [1,]    0    0    0    0    0    0    1    0    0     0
-##  [2,]    0    0    1    0    0    0    0    0    0     0
-##  [3,]    0    0    0    0    0    1    0    0    0     0
-##  [4,]    0    0    0    0    0    0    0    0    1     0
-##  [5,]    0    0    0    0    0    0    0    1    0     0
-##  [6,]    0    0    0    0    1    0    0    0    0     0
-##  [7,]    0    0    0    0    0    0    0    0    0     1
-##  [8,]    1    0    0    0    0    0    0    0    0     0
-##  [9,]    0    0    0    1    0    0    0    0    0     0
-## [10,]    0    1    0    0    0    0    0    0    0     0</code></pre>
+##  [1,]    1    0    0    0    0    0    0    0    0     0
+##  [2,]    0    0    0    0    0    0    0    0    0     1
+##  [3,]    0    0    0    0    0    0    1    0    0     0
+##  [4,]    0    1    0    0    0    0    0    0    0     0
+##  [5,]    0    0    0    1    0    0    0    0    0     0
+##  [6,]    0    0    0    0    0    0    0    0    1     0
+##  [7,]    0    0    0    0    1    0    0    0    0     0
+##  [8,]    0    0    0    0    0    1    0    0    0     0
+##  [9,]    0    0    1    0    0    0    0    0    0     0
+## [10,]    0    0    0    0    0    0    0    1    0     0</code></pre>
 <pre class="r"><code>sol.lsolve &lt;- lsolve.jacobi(M, b2, xinit = x20, reltol = 1e-05, 
                             maxiter = 100, weight = 1, adjsym = FALSE, verbose = TRUE)
 sol.lsolve$x</code></pre>
@@ -808,19 +808,19 @@ sol.lsolve$x</code></pre>
 <pre><code>## [1] &quot;Solucion mediante metodo de Jacobi&quot;
 ## [1] &quot;Matriz A:&quot;
 ##       [,1] [,2] [,3] [,4] [,5] [,6] [,7] [,8] [,9] [,10]
-##  [1,]    0    0    0    0    0    0    1    0    0     0
-##  [2,]    0    0    1    0    0    0    0    0    0     0
-##  [3,]    0    0    0    0    0    1    0    0    0     0
-##  [4,]    0    0    0    0    0    0    0    0    1     0
-##  [5,]    0    0    0    0    0    0    0    1    0     0
-##  [6,]    0    0    0    0    1    0    0    0    0     0
-##  [7,]    0    0    0    0    0    0    0    0    0     1
-##  [8,]    1    0    0    0    0    0    0    0    0     0
-##  [9,]    0    0    0    1    0    0    0    0    0     0
-## [10,]    0    1    0    0    0    0    0    0    0     0
+##  [1,]    1    0    0    0    0    0    0    0    0     0
+##  [2,]    0    0    0    0    0    0    0    0    0     1
+##  [3,]    0    0    0    0    0    0    1    0    0     0
+##  [4,]    0    1    0    0    0    0    0    0    0     0
+##  [5,]    0    0    0    1    0    0    0    0    0     0
+##  [6,]    0    0    0    0    0    0    0    0    1     0
+##  [7,]    0    0    0    0    1    0    0    0    0     0
+##  [8,]    0    0    0    0    0    1    0    0    0     0
+##  [9,]    0    0    1    0    0    0    0    0    0     0
+## [10,]    0    0    0    0    0    0    0    1    0     0
 ## [1] &quot;Vector b:&quot;
-##  [1]   97.67948   35.78868   61.41372  161.67440   40.65312   39.96554
-##  [7]  -11.33850 -112.06857   17.21450   61.52100
+##  [1]  -59.128987   77.946973  -80.616181 -113.997381   60.899661
+##  [6]  170.102199 -239.101769    4.088238  -22.462907  -66.414018
 ## [1] &quot;La matriz tiene algun cero en la diagonal, comienza ordenamiento&quot;
 ## [1] &quot;Matriz ordenada:&quot;
 ##       [,1] [,2] [,3] [,4] [,5] [,6] [,7] [,8] [,9] [,10]
@@ -835,28 +835,28 @@ sol.lsolve$x</code></pre>
 ##  [9,]    0    0    0    0    0    0    0    0    1     0
 ## [10,]    0    0    0    0    0    0    0    0    0     1
 ## [1] &quot;Vector ordenado:&quot;
-##  [1] -112.06857   61.52100   35.78868   17.21450   39.96554   61.41372
-##  [7]   97.67948   40.65312  161.67440  -11.33850
+##  [1]  -59.128987 -113.997381  -22.462907   60.899661 -239.101769
+##  [6]    4.088238  -80.616181  -66.414018  170.102199   77.946973
 ## [1] &quot;Iteracion 0&quot;
 ##  [1] 0 0 0 0 0 0 0 0 0 0
 ## [1] &quot;Iteracion 1&quot;
-##  [1] -112.06857   61.52100   35.78868   17.21450   39.96554   61.41372
-##  [7]   97.67948   40.65312  161.67440  -11.33850
-## [1] &quot;nbr_Numerador: 161.674401155184&quot;
-## [1] &quot;nbr_Denominador: 161.674401155184&quot;
+##  [1]  -59.128987 -113.997381  -22.462907   60.899661 -239.101769
+##  [6]    4.088238  -80.616181  -66.414018  170.102199   77.946973
+## [1] &quot;nbr_Numerador: 239.101768837519&quot;
+## [1] &quot;nbr_Denominador: 239.101768837519&quot;
 ## [1] &quot;nbr_Diff: 1&quot;
 ## [1] &quot;Iteracion 2&quot;
-##  [1] -112.06857   61.52100   35.78868   17.21450   39.96554   61.41372
-##  [7]   97.67948   40.65312  161.67440  -11.33850
+##  [1]  -59.128987 -113.997381  -22.462907   60.899661 -239.101769
+##  [6]    4.088238  -80.616181  -66.414018  170.102199   77.946973
 ## [1] &quot;nbr_Numerador: 0&quot;
-## [1] &quot;nbr_Denominador: 161.674401155184&quot;
+## [1] &quot;nbr_Denominador: 239.101768837519&quot;
 ## [1] &quot;nbr_Diff: 0&quot;
 ## [1] &quot;Se alcanza el threshold&quot;
 ## [1] &quot;Resultado final: &quot;
-##  [1] -112.06857   61.52100   35.78868   17.21450   39.96554   61.41372
-##  [7]   97.67948   40.65312  161.67440  -11.33850</code></pre>
-<pre><code>##  [1] -112.06857   61.52100   35.78868   17.21450   39.96554   61.41372
-##  [7]   97.67948   40.65312  161.67440  -11.33850</code></pre>
+##  [1]  -59.128987 -113.997381  -22.462907   60.899661 -239.101769
+##  [6]    4.088238  -80.616181  -66.414018  170.102199   77.946973</code></pre>
+<pre><code>##  [1]  -59.128987 -113.997381  -22.462907   60.899661 -239.101769
+##  [6]    4.088238  -80.616181  -66.414018  170.102199   77.946973</code></pre>
 <p>Por lo tanto, en las pruebas de este documento, para contrastar contra <code>lsolve.jacobi</code> le damos como input la matriz ordenada mediante nuestra función <em>funcOrdenarEcuaciones</em>.</p>
 <p>Probamos ahora una matriz de <span class="math inline">\(10 \times 10\)</span> estrictamente diagonal positiva diferente a la identidad:</p>
 <pre><code>## [1] &quot;Matriz A:&quot;</code></pre>
@@ -8381,7 +8381,6 @@ sol.lsolve$x</code></pre>
 ##  [91] -8.031615e-03  4.314487e-03 -1.168572e-03  2.491587e-04 -7.405588e-03
 ##  [96] -3.902807e-03 -7.922860e-03  1.973030e-02  4.830054e-03  6.139724e-04</code></pre>
 <p>Converge en la iteración 6 dado el threshold de <span class="math inline">\(10^{-5}\)</span>. Esta matriz tiene un número de condición cercano a 1:</p>
-<p>Su número de condición es:</p>
 <pre class="r"><code>cond(Ad)</code></pre>
 <pre><code>## [1] 1.215994</code></pre>
 </div>
