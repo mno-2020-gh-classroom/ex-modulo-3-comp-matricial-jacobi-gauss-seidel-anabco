@@ -36,7 +36,11 @@ Las tareas e issues detectados durante el desarrollo del proyecto están organiz
 
 
 **Carpetas**
-+ Revisiones
++ Revisiones: se realizó un docuemnto por cada método. En la carpeta están disponibles los archivos en formato .md y .htlm. Sin embargo, para la facilitar la lectura de los documentos desde GitHub, se pueden consultar los siguientes links: 
+
++ [Jacobi](https://mno-2020-gh-classroom.github.io/ex-modulo-3-comp-matricial-jacobi-gauss-seidel-anabco/Revisiones/pruebas_jacobi.html)
++ [Gauss Seidel](https://mno-2020-gh-classroom.github.io/ex-modulo-3-comp-matricial-jacobi-gauss-seidel-anabco/Revisiones/pruebas_gauss_seidel.html)
++ [Eliminación por bloques]
 
 Se crea una liga de Binder para realizas las pruebas de los 3 métodos. 
 
