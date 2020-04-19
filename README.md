@@ -17,11 +17,11 @@ El equipo está integrado por seis personas: un project manager, dos programador
 
 ## Metodología de trabajo
 
-El proyecto se desarrollará bajo una metodología ágil siguiendo el marco de trabajo de [scrum](https://github.com/mno-2020-gh-classroom/ex-modulo-3-comp-matricial-jacobi-gauss-seidel-anabco/blob/master/Intro-scrum.md).
+El proyecto se desarrolló bajo una metodología ágil siguiendo el marco de trabajo de [scrum](https://github.com/mno-2020-gh-classroom/ex-modulo-3-comp-matricial-jacobi-gauss-seidel-anabco/blob/master/Intro-scrum.md).
 
 Se dividió en cuatro milestones: 
 
-+ Definción de equipo y forma de trabajo. El objetivo es definir los roles y responsabilidades. El project manager debe explicar cómo funciona scrum así como el project board. 
++ Definición de equipo y forma de trabajo. El objetivo es definir los roles y responsabilidades. El project manager debe explicar cómo funciona scrum así como el project board. 
 + Milestone1: método de Jacobi: entendimiento, programación y pruebas del método. 
 + Milestone2: método de Gauss Seidel: entendimiento, programación y pruebas del método. 
 + Milestone3: método de eliminación por bloques: entendimiento, programación y pruebas del método. 
@@ -36,7 +36,7 @@ Las tareas e issues detectados durante el desarrollo del proyecto están organiz
 
 
 **Carpetas**
-+ Revisiones: se realizó un docuemnto por cada método. En la carpeta están disponibles los archivos en formato .md y .htlm. Sin embargo, para la facilitar la lectura de los documentos desde GitHub, se pueden consultar los siguientes links: 
++ Revisiones: se realizó un documento por cada método. En la carpeta están disponibles los archivos en formato .md y .htlm. Sin embargo, para la facilitar la lectura de los documentos desde GitHub, se pueden consultar los siguientes links: 
 
 + [Jacobi](https://mno-2020-gh-classroom.github.io/ex-modulo-3-comp-matricial-jacobi-gauss-seidel-anabco/Revisiones/pruebas_jacobi.html)
 + [Gauss Seidel](https://mno-2020-gh-classroom.github.io/ex-modulo-3-comp-matricial-jacobi-gauss-seidel-anabco/Revisiones/pruebas_gauss_seidel.html)
