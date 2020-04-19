@@ -1,7 +1,10 @@
 
 # Examen de cómputo matricial equipo Jacobi, Gauss-Seidel
 
-El equipo creado por el profesor está compuesto por seis integrantes: 
+
+## Equipo de trabajo
+
+El equipo está integrado por seis personas: un prohect manager, dos programadores y tres revisores. 
 
 | Alumno | Equipo |
 |--------|--------|
@@ -12,18 +15,25 @@ El equipo creado por el profesor está compuesto por seis integrantes:
 | Oscar | Revisor  |
 | Ana   | Project Manager |
 
-El proyecto se dividió en 4 milestones: 
-+ Definción de equipo y forma de trabajo. El objetivo es definir los roles y responsabilidades. El project manager debe explicar cómo funciona la metodología SCRUM así como el project board. 
+## Metodología de trabajo
+
+El proyecto se desarrollará bajo una metodología ágil siguiendo el marco de trabajo de [scrum](https://github.com/mno-2020-gh-classroom/ex-modulo-3-comp-matricial-jacobi-gauss-seidel-anabco/blob/master/Intro-scrum.md).
+
+Se dividió en cuatro milestones: 
+
++ Definción de equipo y forma de trabajo. El objetivo es definir los roles y responsabilidades. El project manager debe explicar cómo funciona scrum así como el project board. 
 + Milestone1: méotdo de Jacobi: entendimiento, programación y pruebas del método. 
 + Milestone2: método de Gauss Seidel: entendimiento, programación y pruebas del método. 
 + Milestone3: método de eliminación por bloques: entendimiento, programación y pruebas del método. 
-+ Milestone4: Documentación: documentación de los 3 métodos. 
++ Milestone4: Documentación: documentación de los 3 métodos y revisiones finales de los archivos. 
 
-En el repositorio se pueden encontar las siguentes carpetas y archivos:
+Las tareas e issues detectados durante el desarrollo del proyecto están organizadas en un [project board](https://github.com/mno-2020-gh-classroom/ex-modulo-3-comp-matricial-jacobi-gauss-seidel-anabco/projects/1)
+
+## Estructura del repositorio
 
 **Archivos**
-+ Introducción SCRUM: se presenta, a muy alto nivel, la metodología SCUM así como las reuniones que se tienen que llevar a cabo. 
-+ Parámetros_modelos: indica los parámetros que los programadores debería considerar en el desarrollo de los programas. 
++ Parámetros_modelos: indica los parámetros que los programadores deberían considerar en el desarrollo de los programas. 
+
 
 **Carpetas**
 + Revisiones
@@ -42,17 +52,12 @@ Se crea una liga de Binder para realizas las purebas de los 3 métodos.
 
 **Nota para los equipos que programan una factorización matricial distinta a la SVD:** una vez que programan su factorización matricial tienen que utilizar métodos de sustitución hacia delante y hacia atrás para resolver el SEL asociado. Utilicen [solve triangular](https://docs.scipy.org/doc/scipy/reference/generated/scipy.linalg.solve_triangular.html) de `scipy` o [backsolve/forwardsolve](https://stat.ethz.ch/R-manual/R-devel/library/base/html/backsolve.html) de `R` para esto.
 
-## Fecha de entrega y aspectos a calificar
+## Fecha de entrega
 
 * 19 de abril 11:59 pm
 
-* Cada equipo y persona obtendrán una calificación. Para el equipo consideraré que los métodos obtengan correctamente los resultados y vale 70%. Para la calificación individual calificaré de acuerdo a sus commits, *issues*, *milestones* o tarjetas creadas y vale 30%.
-
-
 ## Lenguaje a utilizar: R
 
-
-## % de la calificación final: 20 puntos
 
 
 
