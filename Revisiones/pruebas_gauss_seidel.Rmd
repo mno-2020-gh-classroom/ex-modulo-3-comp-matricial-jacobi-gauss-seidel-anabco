@@ -7,23 +7,30 @@ output:
   html_document:
     toc: true
     toc_float: true
+    keep_md: true
+#output: rmarkdown::github_document
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-```{r, warning=FALSE, echo=FALSE, message = FALSE}
+```{r message=FALSE, warning=FALSE, include=FALSE}
 library(Rlinsolve)
 library(matrixcalc)
+library(Matrix)
 ```
+
+
+La ejecución del presente markdown se realizó utilizando un Procesador Intel Core i7 2.7GHz con 8GB de RAM.
+
 # Pruebas
 
-En esta versión ya se incluye el threshold como un criterio de paro del algoritmo, adicional al parámetro de iteraciones que indican cuándo termina el algoritmo.
+En esta versión ya se incluye el threshold como un criterio de paro del algoritmo, adicional al parámetro de iteraciones que indican cuándo termina el algoritmo si no ha convergido todavía.
 
 Además, se utiliza la misma función que para el método de Jacobi, con un parámetro *str_Metodo* que indica cuál método se ejecutará, Jacobi o Gauss-Seidel. Este documento se limita a la revisión del método de Gauss-Seidel, en otro documento se realizó la revisión del método de Jacobi.
 
-```{r , warning = FALSE, echo=FALSE }
+```{r , warning=FALSE, include=FALSE}
 ########################## Información general ##########################
 # Los métodos de Jacobi y Gauss_Seidel, permiten resolver
 # sistemas de ecuaciones del tipo Ax=b.
@@ -36,13 +43,34 @@ Además, se utiliza la misma función que para el método de Jacobi, con un par�
 if(!require(pracma)){
     install.packages('pracma', repos = "http://cran.us.r-project.org")
 }
+if(!require(matrixcalc)){
+    install.packages("matrixcalc")
+}
+library('matrixcalc')
 library('pracma')
+library('Matrix')
 
 ########################## Declaración de funciones ##########################
 
 funcEsVectorValido <- function(mtrx, vct){
+  # Valida si el vector (ya sea de resultados o aproximaciones) cuenta
+  # con la misma cantidad de filas que la matriz a evaluar.
+  #
+  # Parámetros
+  # ----------
+  # mtrx : matriz
+  #    La matriz a evaluar
+  # vct : vector
+  #    El vector cuyo número de filas se comparará contra las de la matriz a evaluar
+  #
+  # Regresa
+  # -------
+  # boolean
+  #    Una bandera a manera de booleano indicando si la cantidad de filas del
+  #    vector es igual o no a la cantidad de filas de la matriz a evaluar.
+  #
 
-  # El vector b, debe tener la misma cantidad de filas que la matriz
+  # El vector b debe tener la misma cantidad de filas que la matriz
   bool_VectorValido = FALSE
   if (nrow(mtrx) == length(vct)){
     bool_VectorValido = TRUE
@@ -54,6 +82,19 @@ funcEsVectorValido <- function(mtrx, vct){
 
 # Valida que sea cuadrada la matriz
 funcEsMatrizCuadrada <- function(mtrx){
+  # Valida si la matriz es cuadrada (nxn)
+  #
+  # Parámetros
+  # ----------
+  # mtrx : matriz
+  #    La matriz a evaluar
+  #
+  # Regresa
+  # -------
+  # boolean
+  #    Una bandera a manera de booleano indicando si la cantidad de filas y
+  #    columnas de la matriz son iguales.
+  #
 
   # Si el número de filas es igual al número de columnas, es una matriz cuadrada
   if (nrow(mtrx)==ncol(mtrx)){
@@ -69,6 +110,19 @@ funcEsMatrizCuadrada <- function(mtrx){
 
  # Busca algún cero en la diagonal principal
 funcHayCeroEnDiagonal <- function(mtrx){
+  # Valida si se presenta algún cero en la diagonal de la matriz
+  #
+  # Parámetros
+  # ----------
+  # mtrx : matriz
+  #    La matriz a evaluar
+  #
+  # Regresa
+  # -------
+  # boolean
+  #    Una bandera a manera de booleano indicando si se encontró un cero en
+  #    la diagonal de la matriz.
+  #
 
   bool_HayCero <- FALSE
   nbr_Filas <- nrow(mtrx)
@@ -88,6 +142,26 @@ funcHayCeroEnDiagonal <- function(mtrx){
 
 # Función que obtiene cada componente del vector
 funcObtenerComponente <- function(i, n, mtrx_A, vct_X, vct_B){
+  # Obtiene un solo componente del vector de aproximaciones
+  #
+  # Parámetros
+  # ----------
+  # i : número
+  #    Indíce del componente (del vector de aproximaciones) que se quiere obtener
+  # n : número
+  #    Dimensión de filas o columnas de la matriz
+  # mtrx_A: matriz
+  #    La matriz que se está evaluando
+  # vct_X : vector
+  #    Vector de aproximaciones
+  # vct_B : vector
+  #    Vector de resultados del sistema de ecuaciones
+  #
+  # Regresa
+  # -------
+  # número
+  #    El valor del componente indicado para el vector de aproximaciones
+  #
 
   # Variable en la cual acumularemos el resutlado de la sumatoria
   nbr_Sumatoria = 0
@@ -113,7 +187,7 @@ funcObtenerComponente <- function(i, n, mtrx_A, vct_X, vct_B){
   # Terminada la sumatoria, se prepara un término extra
   nbr_Termino2 = (vct_B[i] / mtrx_A[i,i])
 
-  # El resultado final, es lo acumulado de la sumatoria más el otro término
+  # El resultado final es lo acumulado de la sumatoria más el otro término
   nbr_Final = nbr_Sumatoria + nbr_Termino2
 
   # Regresamos el resultado
@@ -123,6 +197,47 @@ funcObtenerComponente <- function(i, n, mtrx_A, vct_X, vct_B){
 
 # Función que obtiene la aproximación de las iteraciones
 funcObtenerVctRslt <- function(nbr_MaxIteraciones, n, mtrx_A, vct_B, vct_X0, nbr_Threshold, str_Metodo){
+  # Mediante un proceso de iteraciones, actualiza el vector de aproximaciones
+  # vct_X0 para lograr la igualdad: mtrx_A * vct_X0 = vct_B
+  # El proceso de iteraciones está sujeto a que se cumpla alguna de las
+  # siguientes 2 condiciones:
+  #   1: Alcanzar el máximo número de iteraciones (especificado en el parámetro
+  #     nbr_MaxIteraciones)
+  #   2: Lograr llegar a un diferencia entre iteraciones menor al threshold
+  #     que se especifica en el parámetro nbr_Threshold.
+  # En cuanto se cumpla alguna de dichas condiciones, termina el proceso de
+  # iteraciones.
+  # Adicionalmente, hay 2 maneras de calcular el vector de resultados, mediante
+  # el método Jacobi o Gauss-Seidel. La manera de especificar qué método se
+  # quiere emplear es con el parámetro: str_Metodo que se emplea de la
+  # siguiente manera:
+  # Si el valor de str_Metodo es 'J', se emplea el método Jacobi
+  # Si el valor de str_Metodo es 'GS', se emplea el método Gauss-Seidel
+  #
+  # Parámetros
+  # ----------
+  # nbr_MaxIteraciones : número
+  #    Máximo número de iteraciones a alcanzar
+  # n : Número
+  #    Dimensión de filas o columnas de la matriz
+  # mtrx_A : matriz
+  #    Matriz a evaluar
+  # vct_B : vector
+  #    Vector de resultados del sistema de ecuaciones
+  # vct_X0 : vector
+  #    Vector de aproximaciones
+  # nbr_Threshold : número
+  #    Diferencia mínima a la que se quiere llegar entre iteraciones para
+  #    considerar que el método ha convergido
+  # str_Metodo : cadena
+  #    Cadena mediante la cual se especifica el método que se empleará para
+  #    actualizar el vector de aproximaciones.
+  #
+  # Regresa
+  # -------
+  # vector
+  #    El vector de aproximaciones actualizado luego del proceso de iteraciones
+  #
 
   # Inicializamos los vectores de control
   vct_X_Act <- vct_X0
@@ -163,13 +278,20 @@ funcObtenerVctRslt <- function(nbr_MaxIteraciones, n, mtrx_A, vct_B, vct_X0, nbr
     nbr_Diff <-  nbr_Numerador / nbr_Denominador
     print(paste0('nbr_Diff: ',nbr_Diff))
 
+    # Si se empiezan a obtener valores NaN, significa que no hay solución
+    if (is.na(nbr_Diff)){
+      print('No hay convergencia')
+      vct_X_Act <- rep(NA, size(vct_X0)[2])
+      break
+    }
+
     # Si se llega a una diferencia menor al threshold indicado, salimos del for
     if (nbr_Diff<nbr_Threshold){
       print('Se alcanza el threshold')
       break
     }
 
-    # El vector resultado (k), lo usamos como vector anterior (k-1) para la sigueinte
+    # El vector resultado (k) lo usamos como vector anterior (k-1) para la sigueinte
     # iteraación
     vct_X_Ant <- vct_X_Act
 
@@ -185,6 +307,22 @@ funcObtenerVctRslt <- function(nbr_MaxIteraciones, n, mtrx_A, vct_B, vct_X0, nbr
 }
 
 funcInterCambiarFilasVct <- function(vctOrigen, nbr_FilaOrigen, nbr_FilaDestino){
+  # Intercambia las filas de un vector
+  #
+  # Parámetros
+  # ----------
+  # mtrx_A : vector
+  #    El vector donde se realizará el intercambio de filas
+  # nbr_FilaOrigen : número
+  #    Índice de la fila origen que se moverá a la fila destino
+  # nbr_FilaDestino : número
+  #    Índice de la fila destino que se moverá a la fila origen
+  #
+  # Regresa
+  # -------
+  # vector
+  #    El vector con los valores intercambiados
+  #
 
   # Se guarda el valor destino
   nbr_ValorTmp <- vctOrigen[nbr_FilaDestino]
@@ -201,6 +339,26 @@ funcInterCambiarFilasVct <- function(vctOrigen, nbr_FilaOrigen, nbr_FilaDestino)
 }
 
 funcInterCambiarFilasMtrx <- function(mtrx, nbr_FilaOrigen, nbr_FilaDestino, nbr_Cols){
+  # Intercambia las filas de una matriz
+  #
+  # Parámetros
+  # ----------
+  # mtrx : matriz
+  #    La matriz donde se realizará el intercambio de filas
+  # nbr_FilaOrigen : número
+  #    Índice de la fila origen que se moverá a la fila destino
+  # nbr_FilaDestino : número
+  #    Índice de la fila destino que se moverá a la fila origen
+  #
+  # Regresa
+  # -------
+  # matriz
+  #    La matriz con los valores intercambiados
+  #
+
+  # print('funcInterCambiarFilasMtrx')
+  # print(nbr_FilaOrigen)
+  # print(nbr_FilaDestino)
 
   # Se guarda el valor destino
   vct_FilaTmp <- mtrx[nbr_FilaDestino,1:nbr_Cols]
@@ -217,17 +375,40 @@ funcInterCambiarFilasMtrx <- function(mtrx, nbr_FilaOrigen, nbr_FilaDestino, nbr
 }
 
 funcOrdenarEcuaciones <- function(mtrx_A, vct_B){
+  # Ordena las ecuaciones del sistema buscando que no quede ningún cero
+  # sobre la diagonal principal (no hay garantía de que no quede algún
+  # cero sobre la diagonal). Para saber qué fila tomar, se hace una búsqueda
+  # sobre cada columna preguntando por la norma infinito de cada vector-columna.
+  # Puesto que el sistema de ecuaciones consta tanto de variables como de
+  # resultados, es necesario tambén el re-acomodo del vector de resultados.
+  #
+  # Parámetros
+  # ----------
+  # mtrx_A : matriz
+  #    La matriz que se va a ordenar
+  # vct_B : vector
+  #    El vector que se va a ordenar.
+  #
+  # Regresa
+  # -------
+  # list
+  #    Una lista que contiene la matriz a evaluar y el vector de resultados.
+  #
 
-  # Variables que se usan dentro de la funcion
+  # Variables que se usan dentro de la función
   nbr_Filas <- nrow(mtrx_A)
   nbr_Cols <- ncol(mtrx_A)
 
-  # Se barren todas las columnas (iterador j)
-  for (j in 1:nbr_Cols){
-    # print('Inicia iteracion')
+  bool_NrmInfPos <- TRUE
 
-    # Se saca el vector-columna que se usará esta iteración
-    vct_Col = mtrx_A[1:nbr_Cols,j]
+  # Se barren todas las columnas (iterador j)
+  for (j in 1:(nbr_Cols-1)){
+    #print('Inicia iteracion')
+    #print(j)
+    bool_NrmInfPos <- TRUE
+
+    # Se saca el vector-columna que se usará en esta iteración
+    vct_Col = mtrx_A[j:nbr_Cols,j]
 
     # Mostramos el vector-columna con el que trabajaremos
     # print(vct_Col)
@@ -239,6 +420,13 @@ funcOrdenarEcuaciones <- function(mtrx_A, vct_B){
     # Se pregunta si el valor es único en el vector-columna
     vct_OrdDesc <- sort(vct_Col, decreasing = TRUE)
     # print(vct_OrdDesc)
+
+    # Preguntamos si el primer elemento del vector es diferente a la norma infinito
+    # (eso significará que la norma infinito proviene de un número negativo)
+    if (nbr_Norm != vct_OrdDesc[1]){
+      vct_OrdDesc <- sort(vct_Col, decreasing = FALSE)
+      bool_NrmInfPos <- FALSE
+    }
 
     # Si sí es único:
     if (vct_OrdDesc[1] != vct_OrdDesc[2]){
@@ -256,6 +444,7 @@ funcOrdenarEcuaciones <- function(mtrx_A, vct_B){
 
       }
 
+      nbr_Index <- nbr_Index + (j-1)
       # Para realizar el intercambio de filas, nuestra
       # fila origen será: nbr_Index, y la fila destino: j
       mtrx_A <- funcInterCambiarFilasMtrx(mtrx_A, nbr_Index, j, nbr_Cols)
@@ -264,40 +453,104 @@ funcOrdenarEcuaciones <- function(mtrx_A, vct_B){
       # print(mtrx_A)
 
     } else { # Si no es único:
-      #print('Hay empate')
+
+      # Preguntamos si la norma infinito viene de un positivo o negativo
+      if (bool_NrmInfPos==FALSE){
+        # La multiplicamos por -1 para que haya coincidencias
+        nbr_Norm = nbr_Norm * -1
+      }
+
+      #if (j==94) {
+        #print('Hay empate')
+
+        #print('mtrx_A')
+        #print(mtrx_A)
+
+        #print('nbr_Norm')
+        #print(nbr_Norm)
+
+        #print('vct_Col')
+        #print(vct_Col)
+      #}
 
       vct_Bool1 <- (vct_Col==nbr_Norm)
 
-      mtrx_Tmp <- mtrx_A[vct_Bool1,1:nbr_Cols]
-      #print(mtrx_Tmp)
+      # Si se trata de la última columna, es un caso especial
+      if ((j+1)==nbr_Cols){
+        #print('Caso especial')
+        mtrx_Tmp1 <- mtrx_A[j:nbr_Cols, (j+1):nbr_Cols]
+        mtrx_Tmp1 <- rbind(mtrx_Tmp1)
+        mtrx_Tmp1 <- t(mtrx_Tmp1)
 
-      # Barremos el resto de las columans para el desempate
-      for (jj in (j+1):nbr_Cols){
+        mtrx_Tmp2 <- mtrx_Tmp1[vct_Bool1, 1:(nbr_Cols-j)]
+        mtrx_Tmp2 <- rbind(mtrx_Tmp2)
+        mtrx_Tmp2 <- t(mtrx_Tmp2)
 
-        vct_ColDesempate <- mtrx_Tmp[,jj]
-        # print(paste0('vct_ColDesempate: ', vct_ColDesempate))
+      }else{ # Este es el caso normal
+        mtrx_Tmp1 <- mtrx_A[j:nbr_Cols, (j+1):nbr_Cols]
+        mtrx_Tmp2 <- mtrx_Tmp1[vct_Bool1, 1:(nbr_Cols-j)]
+      }
+
+      #if (j==94) {
+        #print('mtrx_Tmp1 pt1')
+        #print(mtrx_Tmp1)
+        #print('dim')
+        #print(dim(mtrx_Tmp1))
+        #print('vct_Bool1')
+        #print(vct_Bool1)
+        #print('mtrx_Tmp2 pt2')
+        #print(mtrx_Tmp2)
+        #print('dim')
+        #print(dim(mtrx_Tmp2))
+      #}
+
+
+      # Barremos el resto de las columnas para el desempate
+      for (jj in 1:(nbr_Cols-j)){
+        #print('j')
+        #print(j)
+        #print('jj')
+        #print(jj)
+        #print('nrow(mtrx_Tmp2)')
+        #print(nrow(mtrx_Tmp2))
+        vct_ColDesempate <- mtrx_Tmp2[jj:nrow(mtrx_Tmp2),jj]
 
         # Buscaremos el valor mínimo de la siguiente columna
         vct_OrdAsc <- sort(vct_ColDesempate)
-        # print(vct_OrdAsc)
+        #print(vct_OrdAsc)
 
         # Si el  mínimo es único:
         if (vct_OrdAsc[1] != vct_OrdAsc[2]){
 
-          # print('es unico')
+          #print('es unico')
           # Generamos el vector que nos ayudará a obtener las filas a desempatar
           vct_Bool2 <- (vct_ColDesempate == vct_OrdAsc[1])
-          # print(vct_Bool2)
+          #print(vct_Bool2)
 
-          vct_FilaDesempate <- mtrx_Tmp[vct_Bool2]
+          # Ya que tenemos el vector que dice cuál es la fila que debemos tomar
+          # vamos yendo hacia atrás para averiguar el índice relativo de
+          # en columna con la que estamos trabajando
+          #print('Comienza regreso')
+          vct_Tmp1 <- mtrx_Tmp2[vct_Bool2]
+          #print('vct_Tmp1')
+          #print(vct_Tmp1)
 
-          # Ya que se tiene la fila mínima del empate, se obtiene su indice
-          # en la matriz_A
-          vct_Bool3 <- rowSums(mtrx_A == vct_FilaDesempate[col(mtrx_A)]) == ncol(mtrx_A)
-          nbr_Index <- match(TRUE,vct_Bool3)
+          vct_Bool3 <- (vct_Tmp1==mtrx_Tmp1)
+          #print('vct_Bool3')
+          #print(vct_Bool3)
+
+          vct_bool4 <- apply(mtrx_Tmp1, 1, function(x) all(x==vct_Tmp1))
+          #print('vct_bool4')
+          #print(vct_bool4)
+
+          nbr_Index <- match(TRUE, vct_bool4)
+          # nbr_Index <- match(TRUE,vct_Bool2)
+          #print('nbr_Index')
+          #print(nbr_Index)
+          nbr_Index <- nbr_Index + (j-1)
 
           # Para realizar el intercambio de filas, nuestra
-          # fila origen será: nbr_Index, y la fila destino: j
+          # fila origen será: nbr_Index y la fila destino: j
           mtrx_A <- funcInterCambiarFilasMtrx(mtrx_A, nbr_Index, j, nbr_Cols)
           vct_B <- funcInterCambiarFilasVct(vct_B, nbr_Index, j)
 
@@ -318,53 +571,63 @@ funcOrdenarEcuaciones <- function(mtrx_A, vct_B){
 }
 
 funcResolverSE <- function(mtrx_A, vct_B, vct_X0, nbr_MaxIteraciones, nbr_Threshold, str_Metodo){
+  # Resuelve un sistema de ecuaciones lineales mediante el método de Jacobi
+  # o de Gauss-Seidel. El sistema de ecuaciones sólo se procesará si pasa
+  # todas las validaciones requeridas.
+  #
+  # Parámetros
+  # -------
+  # mtrx_A : matriz
+  #    Matriz a evaluar
+  # vct_B : vector
+  #    Vector de resultados del sistema de ecuaciones
+  # vct_X0 : vector
+  #    Vector de aproximaciones
+  # nbr_MaxIteraciones : número
+  #    Máximo número de iteraciones a alcanzar
+  # nbr_Threshold : número
+  #    Diferencia mínima a la que se quiere llegar entre iteraciones para
+  #    considerar que el método ha convergido
+  # str_Metodo : cadena
+  #    Cadena mediante la cual se especifica el método que se empleará para
+  #    actualizar el vector de aproximaciones.
+  #
+  # Regresa
+  # -------
+  # vector
+  #    El vector de aproximaciones luego del proceso de iteraciones
 
-  if (str_Metodo == 'J' || str_Metodo == 'GS'){
+  # Se agrega condicón para validar que la matriz no sea singular
 
-    if (str_Metodo=='J'){
-      print('Solucion mediante metodo de Jacobi')
-    }
-    if (str_Metodo=='GS'){
-      print('Solucion mediante metodo de Gauss-Seidel')
-    }
+  # Se inicializa el vector de resultados
+  vct_XRslt <- rep(NA, size(vct_X0)[2])
 
-    print('Matriz A:')
-    print(mtrx_A)
+  if (funcEsMatrizCuadrada(mtrx_A) == TRUE){
 
-    print('Vector b:')
-    print(vct_B)
+    if(!is.singular.matrix(mtrx_A)){
 
-    # Se aplican las validaciones de manera anidada
-    if (funcEsVectorValido(mtrx_A, vct_B)){
+      if (str_Metodo == 'J' || str_Metodo == 'GS'){
 
-      if (funcEsVectorValido(mtrx_A, vct_X0)){
+        if (str_Metodo=='J'){
+          print('Solución mediante metodo de Jacobi')
+        }
+        if (str_Metodo=='GS'){
+          print('Solución mediante metodo de Gauss-Seidel')
+        }
 
-        if (funcEsMatrizCuadrada(mtrx_A) == TRUE){
+        print('Matriz A:')
+        print(mtrx_A)
 
-          # Obtenemos la n de la matriz
-          n <- nrow(mtrx_A)
+        print('Vector b:')
+        print(vct_B)
 
-          if (funcHayCeroEnDiagonal(mtrx_A) == FALSE){
+        # Se aplican las validaciones de manera anidada
+        if (funcEsVectorValido(mtrx_A, vct_B)){
 
-            # Se manda a llamar la función que obtendrá la aproximación
-            vct_XRslt <- funcObtenerVctRslt(nbr_MaxIteraciones, n, mtrx_A, vct_B, vct_X0, nbr_Threshold, str_Metodo)
+          if (funcEsVectorValido(mtrx_A, vct_X0)){
 
-            # Se imprime el resultado
-            print('Resultado final: ')
-            print(vct_XRslt)
-
-          } else {
-            print('La matriz tiene algun cero en la diagonal, comienza ordenamiento')
-
-            lt_Obj <- funcOrdenarEcuaciones(mtrx_A, vct_B)
-            mtrx_A <- lt_Obj$matriz
-            vct_B <- lt_Obj$vector
-
-            print('Matriz ordenada:')
-            print(mtrx_A)
-
-            print('Vector ordenado:')
-            print(vct_B)
+            # Obtenemos la n de la matriz
+            n <- nrow(mtrx_A)
 
             if (funcHayCeroEnDiagonal(mtrx_A) == FALSE){
 
@@ -376,26 +639,75 @@ funcResolverSE <- function(mtrx_A, vct_B, vct_X0, nbr_MaxIteraciones, nbr_Thresh
               print(vct_XRslt)
 
             } else {
-              print('Pese al reordenamiento, aun hay ceros en la diagonal')
+              print('La matriz tiene algún cero en la diagonal, comienza ordenamiento')
+
+              # Respaldo del orden original
+              mtrx_Original <- mtrx_A
+              vct_Original <- vct_B
+
+              lt_Obj <- funcOrdenarEcuaciones(mtrx_A, vct_B)
+              mtrx_A <- lt_Obj$matriz
+              vct_B <- lt_Obj$vector
+
+              print('Matriz ordenada:')
+              print(mtrx_A)
+
+              print('Vector ordenado:')
+              print(vct_B)
+
+              if (funcHayCeroEnDiagonal(mtrx_A) == FALSE){
+
+                # Se manda a llamar la función que obtendrá la aproximación
+                vct_XRslt <- funcObtenerVctRslt(nbr_MaxIteraciones, n, mtrx_A, vct_B, vct_X0, nbr_Threshold, str_Metodo)
+
+                # Se imprime el resultado
+                print('Resultado final (nuevo orden): ')
+                print(vct_XRslt)
+
+                # Se reordena el vector de resultados para entregarlo en el mismo
+                # orden en que fue solicitado
+                nbr_Filas <-size(vct_XRslt)[2]
+                for (i in 1:nbr_Filas){
+                  for (j in 1:nbr_Filas){
+                    if (sum(mtrx_A[i,]==mtrx_Original[j,]) == nbr_Filas){
+                      mtrx_A <- funcInterCambiarFilasMtrx(mtrx_A, i, j, nbr_Filas)
+                      vct_XRslt <- funcInterCambiarFilasVct(vct_XRslt, i, j)
+                    }
+                  }
+                }
+                print('Resultado final (orden original): ')
+                print(vct_XRslt)
+
+              } else {
+                print('Pese al reordenamiento, aún hay ceros en la diagonal')
+              }
+
             }
 
+          } else {
+            print('El vector de aproximaciones no es de las dimensiones esperadas')
           }
 
         } else {
-            print('La matriz no cumple con ser de dimensiones nxn')
+          print('El vector de resultados no es de las dimensiones esperadas')
         }
+
       } else {
-        print('El vector de aproximaciones no es de las dimensiones esperadas')
+        print("El método especificado no es válido, se espera 'GS' para Gauss-Seidel o 'J' para Jacobi")
       }
+
     } else {
-      print('El vector de resultados no es de las dimensiones esperadas')
+      print('La matriz es singular, por lo tanto no hay solución al sistema y el método se detiene')
     }
 
-  }else{
-    print('El metodo especificado no es valido, se espera "GS" para Gauss-Seidel o "J" para Jacobi')
+  } else {
+      print('La matriz no cumple con ser de dimensiones nxn')
   }
-}
 
+  # Se devuelve el vector de resultados
+  vct_XRslt
+
+}
 
 ```
 
@@ -476,7 +788,7 @@ Intentamos ahora disminuir el threshold, a $10^{-5}$:
 
 funcResolverSE(mtrx_A, vct_B, vct_X0, nbr_MaxIteraciones, 1*10^-5, str_Metodo)
 ```
-Observemos que esta solución coincide exactamente con la presentada en las notas de clase.
+Observemos que esta solución coincide con la presentada en las notas de clase.
 
 Contrastamos ahora esta solución con un método de Gauss-Seidel ya implementado en la librería ```Rlinsolve```:
 
@@ -501,7 +813,10 @@ sol.lsolve <- lsolve.gs(mtrx_A, vct_B, xinit = vct_X0, reltol = 1*10^-4,
 
 sol.lsolve$x
 ```
-Vemos que el resultado coincide con el obtenido por nuestra implementación, usando $10^{-4}$ como la tolerancia en el método ```lsolve.gs```. 
+
+el resultado es cercano al obtenido por nuestro método. 
+
+Vemos que el resultado de nuestro método usando un threshols de $10^{-3}$ coincide con el obtenido por nuestra implementación, usando $10^{-4}$ como la tolerancia en el método ```lsolve.gs```. 
 
 Se llega a este resultado en la iteración número:
 ```{r echo=F, message=FALSE}
@@ -555,18 +870,9 @@ funcResolverSE(mtrx_A, vct_B, vct_X0, nbr_MaxIteraciones, nbr_Threshold, str_Met
 
 Comparemos el resultado con el obtenido con la librería ```Rlinsolve```. Para ello, debemos usar la matriz ordenada (y el vector ordenado correspondiente):
 ```{r echo=FALSE}
-# Matriz A
-mtrx_A_ord <- matrix(c(
-                  1,0,0,0,
-                  1,2,0,0,
-                  1,1,1,0,
-                  0,1,2,1
-                  ),
-                  nrow=4,
-                  ncol=4,
-                 byrow = TRUE)
-vct_B_ord <- c(6, -11, 15, 25)
-
+lt_Obj <- funcOrdenarEcuaciones(mtrx_A, vct_B)
+            mtrx_A_ord <- lt_Obj$matriz
+            vct_B_ord <- lt_Obj$vector
 print('Matriz A reordenada:')
 print(mtrx_A_ord)
 
@@ -625,8 +931,7 @@ print(nbr_MaxIteraciones)
 
 Al ejecutar el algoritmo se obtiene:
 
-```{r, echo=FALSE}
-
+```{r echo=FALSE}
 funcResolverSE(mtrx_A, vct_B, vct_X0, nbr_MaxIteraciones, nbr_Threshold, str_Metodo)
 ```
 
@@ -661,7 +966,7 @@ print(nbr_MaxIteraciones)
 
 Al ejecutar el algoritmo se obtiene:
 
-```{r, echo=FALSE}
+```{r echo=FALSE}
 
 funcResolverSE(mtrx_A, vct_B, vct_X0, nbr_MaxIteraciones, nbr_Threshold, str_Metodo)
 ```
@@ -905,10 +1210,62 @@ Al ejecutar el algoritmo se obtiene:
 funcResolverSE(mtrx_A, vct_B, vct_X0, nbr_MaxIteraciones, nbr_Threshold, str_Metodo)
 ```
 
+## Matrices singulares
+
+Veamos qué hace el método propuesto al aplicarse a una matriz singular.
+
+Definamos nuestros  parámetros:
+
+```{r echo=FALSE}
+str_Metodo <- 'GS'
+
+mtrx_A <- ones(2)
+
+vct_B <- c(15, 25)
+
+# Vector de aproximación inicial
+vct_X0 <- c(0,0)
+
+# Máximo número de iteraciones permitido
+nbr_MaxIteraciones <- 50
+
+# Threshold que se busca alcanzar
+nbr_Threshold <- 10**(-2)
+
+# Método a utilizar
+str_Metodo <- 'GS'
 
 
+print('Matriz A:')
+print(mtrx_A)
+
+print('Vector b:')
+print(vct_B)
+
+print('Punto inicial:')
+print(vct_X0)
+
+print('Máximo número de iteraciones:')
+print(nbr_MaxIteraciones)
+
+print('Threshold a alcanzar:')
+print(nbr_Threshold)
 
 
+print('Método a utilizar:')
+print(str_Metodo)
+```
+Verificamos que la matriz propuesta es singular, esto es, no tiene solución única:
+
+```{r echo=FALSE}
+is.singular.matrix(mtrx_A)
+```
+
+Intentamos aplicar el método implementado:
+```{r echo=FALSE}
+funcResolverSE(mtrx_A, vct_B, vct_X0, nbr_MaxIteraciones, nbr_Threshold, str_Metodo)
+
+```
 
 
 ## Matrices Dominantes Estrictas en la Diagonal por Renglones
@@ -1025,7 +1382,7 @@ print(nbr_Threshold)
 
 El algoritmo devuelve:
 
-```{r}
+```{r echo=FALSE}
 funcResolverSE(mtrx_A, vct_B, vct_X0, nbr_MaxIteraciones, nbr_Threshold, str_Metodo)
 
 
@@ -1035,7 +1392,7 @@ Se detiene en la iteración 6 al llegar al threshold, pues el método converge.
 
 La función ```lsolve.gs``` devuelve un resultado muy similar, con aproximadamente 6 decimales iguales al resultado de nuestro algoritmo:
 
-```{r, echo=F, message=F}
+```{r echo=F, message=FALSE}
 sol.lsolve <- lsolve.gs(mtrx_A, vct_B, xinit = vct_X0, reltol = nbr_Threshold, 
                             maxiter = 100, adjsym = FALSE, verbose = TRUE)
 sol.lsolve$x
@@ -1054,7 +1411,7 @@ sol.lsolve <- lsolve.gs(mtrx_A, vct_B, xinit = vct_X0, reltol = 1e-06,
 
 sol.lsolve$x
 ```
-Mismo que obtiene en la iteración número:
+Obtenido en la iteración número:
 ```{r echo=F, message=FALSE}
 sol.lsolve$iter
 ```
@@ -1069,8 +1426,8 @@ Probemos entonces estos casos:
 
 ## Matrices grandes
 
-Usamos una matriz de dimensiones $10^2$, que almacenamos en un archivo csv. La leemos, ignorando la primera columna, que sólo indica el número de fila:
-```{r}
+Usamos una matriz de dimensiones $10^2$, que será la matriz de mayor dimensión que probaremos. Las entradas de la matriz están almacenadas en un archivo csv. La leemos, ignorando la primera columna, que sólo indica el número de fila:
+```{r echo=FALSE}
 mat_A_10_2 <-read.csv("matriz_ej_ordenar.csv")
 mat_A_10_2 <- mat_A_10_2[,2:101]
 colnames(mat_A_10_2) <- NULL
@@ -1079,9 +1436,6 @@ dimnames(mat_A_10_2)<-NULL
 ```
 
 
-```{r}
-is.singular.matrix(mat_A_10_2)
-```
 Definimos el resto de parámetros necesarios:
 ```{r echo=FALSE}
 set.seed(1604)
@@ -1113,24 +1467,21 @@ print(nbr_Threshold)
 
 Y aplicamos el método que implementamos:
 
-```{r eval=FALSE, include=TRUE}
-funcResolverSE(mat_A_10_2, vct_B_10_2, vct_x0_10_2, nbr_MaxIteraciones, nbr_Threshold, str_Metodo)
+```{r eval=FALSE, include=FALSE}
+xGS_10_2 <- funcResolverSE(mat_A_10_2, vct_B_10_2, vct_x0_10_2, nbr_MaxIteraciones, nbr_Threshold, str_Metodo)
 
 ```
+Vemos que se llega al tope de iteraciones.
 
-Ahora intentamos resolver el sistema homogéneo:
-```{r eval=FALSE, include=TRUE}
-funcResolverSE(mat_A_10_2, vct_x0_10_2, vct_x0_10_2, nbr_MaxIteraciones, nbr_Threshold, str_Metodo)
-
-```
 Intentemos resolver el sistema mediante la librería ```Rlinsolve```, para ello, necesitamos primero reordenar la matriz. Lo hacemos con una de las funciones propuestas en nuestra implementación:
-```{r}
+```{r echo=FALSE}
 lt_Obj <- funcOrdenarEcuaciones(mat_A_10_2, vct_B_10_2)
             mat_10_2 <- lt_Obj$matriz
             vct_B <- lt_Obj$vector
 ```
 
-Ahora probamos el método  ```lsolve.gs``` con una tolerancia de $10^{-6}$:
+Ahora probamos el método ```lsolve.gs``` con la misma tolerancia y tope de iteraciones:
+
 ```{r message=FALSE}
 
 sol.lsolve <- lsolve.gs(mat_10_2, vct_B, xinit = vct_x0_10_2, reltol = nbr_Threshold, 
@@ -1143,67 +1494,279 @@ Se llega a este resultado en la iteración número:
 ```{r echo=F, message=FALSE}
 sol.lsolve$iter
 ```
+
+
 Verificamos también el número de condición de la matriz:
-```{r}
+```{r echo=FALSE}
 cond(mat_10_2)
 ```
+Resultando ser un número grande, casi de $10^3$, por lo tanto no podemos confiar en la solución. Además al no ser una matriz dominante estricta en la diagonal por renglones, no hay garantía de convergencia del método de Gauss- Seidel.
 
-## Matrices Sparse o ralas
+Probamos ahora con una matriz bien condicionada, de las mismas dimensiones $10^2 \times 10^2$.
 
-## Matrices singulares
+```{r, echo=F}
+set.seed(123)
+mat <- matrix(data = 100*rnorm(10000), nrow = 100, ncol = 100)
+mode(mat) <- "integer"
+mode(mat) <- "numeric"
 
-Veamos qué hace el método propuesto al aplicarse a una matriz singular.
+b <- c(100*rnorm(100))
 
-Definamos nuestros  parámetros:
+mode(b) <- "integer"
+mode(b) <- "numeric"
 
-```{r echo=FALSE}
-str_Metodo <- 'GS'
+x0 <- c(rep(0,100))
 
-mtrx_A <- ones(2)
+nbr_MaxIteraciones <- 100
+nbr_Threshold <- 10**(-5)
 
-vct_B <- c(15, 25)
+mat2 <- mat
+diag(mat2) <- 5000+diag(mat)
 
-# Vector de aproximación inicial
-vct_X0 <- c(0,0)
+print('Dimensiones matriz A:')
+print(dim(mat2))
 
-# Máximo número de iteraciones permitido
-nbr_MaxIteraciones <- 50
+print('Dimensiones vector b:')
+print(size(b))
 
-# Threshold que se busca alcanzar
-nbr_Threshold <- 10**(-2)
-
-# Método a utilizar
-str_Metodo <- 'GS'
-
-
-print('Matriz A:')
-print(mtrx_A)
-
-print('Vector b:')
-print(vct_B)
-
-print('Punto inicial:')
-print(vct_X0)
+print('Dimensiones punto inicial:')
+print(size(x0))
 
 print('Máximo número de iteraciones:')
 print(nbr_MaxIteraciones)
 
-print('Threshold a alcanzar:')
+print('Threshold:')
+print(nbr_Threshold)
+```
+
+Su número de condición es 
+```{r echo=FALSE}
+cond(mat2)
+```
+
+Al resolver el sistema con nuestro algoritmo obtenemos:
+```{r echo=FALSE}
+xGS1 <- funcResolverSE(mat2, b, x0, nbr_MaxIteraciones, nbr_Threshold, str_Metodo)
+
+```
+
+Nuestro método converge en la iteración 9.
+
+Lo resolvemos con la función ```lsolve.jacobi```:
+```{r, message=F}
+
+sol.lsolve <- lsolve.jacobi(mat2, b, xinit = x0, reltol = 1e-05, 
+                            maxiter = 100, weight = 1, adjsym = FALSE, verbose = TRUE)
+sol.lsolve$x
+sol.lsolve$iter
+```
+
+Se obtiene un resultado muy similar al de nuestro algoritmo. Como no se requirió ordenamiento, podemos calcular el error relativo, que es del orden de:
+
+```{r echo=FALSE}
+print('error relativo:')
+err_rel = Norm(sol.lsolve$x-xGS1, p = 2)/Norm(xGS1)
+print(err_rel)
+```
+## Matrices Sparse o ralas
+
+```{r echo=FALSE}
+set.seed(123)
+vec1 <- (sample.int(100,size=5000,replace=TRUE))
+#vec1
+
+vec2 <- (sample.int(100,size=5000,replace=TRUE))
+#vec2
+
+vals <- c(10*rnorm(300))
+mode(vals) <- "integer"
+mode(vals) <- "numeric"
+
+A <- sparseMatrix(vec1, vec2, x=vals)
+A
+```
+
+
+```{r echo=FALSE}
+A <- matrix(A,nrow = 100, ncol = 100)
+```
+
+
+```{r echo=FALSE}
+A
+```
+Vemos que la matriz tiene un número de condición elevado:
+
+```{r echo=FALSE}
+cond(A)
+```
+ Veamos si es singular:
+
+```{r}
+is.singular.matrix(A)
+```
+
+Ya que no lo es, intentemos resolver el sistema de ecuaciones. Para ello, definimos los parámetros faltantes:
+```{r echo=FALSE}
+b <- c(10*rnorm(100))
+
+mode(b) <- "integer"
+mode(b) <- "numeric"
+
+x0 <- c(rep(0,100))
+
+nbr_MaxIteraciones <- 500
+
+nbr_Threshold <- 10**(-5)
+
+
+print('Dimensiones matriz A:')
+print(dim(mat_A_10_2))
+
+print('Dimensiones vector b:')
+print(size(vct_B_10_2))
+
+print('Dimensiones punto inicial:')
+print(size(vct_x0_10_2))
+
+print('Máximo número de iteraciones:')
+print(nbr_MaxIteraciones)
+
+print('Threshold:')
 print(nbr_Threshold)
 
-
-print('Método a utilizar:')
-print(str_Metodo)
 ```
-Verificamos que la matriz propuesta es singular, esto es, no tiene solución única:
+ Y aplicamos el método implementado:
 
-```{r}
-is.singular.matrix(mtrx_A)
+```{r echo=FALSE}
+funcResolverSE(A, b, x0, nbr_MaxIteraciones, nbr_Threshold, str_Metodo)
+```
+Vemos que la matriz propuesta no permitió resolver el sistema, pues tenía ceros en la diagonal, aún reordenándola. 
+
+
+Hagámosla *dominante estricta* en la diagonal por renglones:
+```{r echo=FALSE}
+A_dom = max(rowSums(A))* diag(100)+A
+A_dom
+```
+Y vemos que ahora es medianamente bien condicionada: 
+```{r echo=FALSE}
+cond(A_dom)
+```
+```{r include=FALSE}
+bGS <- funcResolverSE(A_dom, b, x0, nbr_MaxIteraciones, nbr_Threshold, str_Metodo)
 ```
 
-Intetamos aplicar el método implementado:
-```{r}
-funcResolverSE(mtrx_A, vct_B, vct_X0, nbr_MaxIteraciones, nbr_Threshold, str_Metodo)
+```{r echo=FALSE}
+bGS
+```
+
+Se alcanza el threshold en la 8ª iteración.
+
+Comparamos con el resultado del método  ```lsolve.gs```. Recordemos que necesitamos pasarle la matriz ordenada:
+
+```{r echo=FALSE}
+lt_Obj <- funcOrdenarEcuaciones(A_dom, b)
+            A_ord <- lt_Obj$matriz
+            b_ord <- lt_Obj$vector
+```
+
+Ahora probamos el método  ```lsolve.gs``` con la misma tolerancia:
+```{r message=FALSE}
+
+sol.lsolve <- lsolve.gs(A_ord, b_ord, xinit = x0, reltol = nbr_Threshold, 
+                            maxiter = nbr_MaxIteraciones, adjsym = FALSE, verbose = TRUE)
+
+sol.lsolve$x
+
+```
+Y calculamos el error relativo:
+
+```{r echo=FALSE}
+#bGS <- funcResolverSE(A_dom, b, x0, nbr_MaxIteraciones, nbr_Threshold, str_Metodo)
+print('error relativo:')
+err_rel = Norm(sol.lsolve$x-bGS, p = 2)/Norm(bGS)
+print(err_rel)
+```
+ Ahora probamos el método  ```lsolve.gs``` disminuyendo la tolerancia:
+```{r message=FALSE}
+
+sol.lsolve <- lsolve.gs(A_ord, b_ord, xinit = x0, reltol = nbr_Threshold/10, 
+                            maxiter = nbr_MaxIteraciones, adjsym = FALSE, verbose = TRUE)
+
+sol.lsolve$x
 
 ```
 
+Y calculamos el error relativo:
+
+```{r echo=FALSE}
+print('error relativo:')
+err_rel = Norm(sol.lsolve$x-bGS, p = 2)/Norm(bGS)
+print(err_rel)
+```
+
+Podemos ver que nuestra aproximación es más cercana a este último resultado.
+
+
+### 10^3
+
+```{r echo=FALSE}
+set.seed(123)
+vec1 <- (sample.int(1000,size=5000,replace=TRUE))
+#vec1
+
+vec2 <- (sample.int(1000,size=5000,replace=TRUE))
+#vec2
+
+values <- c(10*rnorm(500))
+mode(values) <- "integer"
+mode(values) <- "numeric"
+
+A1 <- sparseMatrix(vec1, vec2, x=values)
+
+```
+
+
+```{r echo=FALSE}
+A1 <- as.matrix(A1)
+```
+
+
+La forzamos a ser dominante esctricta en la diagonal por renglones:
+```{r echo=FALSE}
+A1_dom = max(rowSums(A1))* diag(1000)+A1
+```
+
+
+Definimos los demás parámetros:
+```{r echo=FALSE}
+b1 <- c(10*rnorm(1000))
+
+mode(b) <- "integer"
+mode(b) <- "numeric"
+
+x0 <- c(rep(0,1000))
+
+nbr_MaxIteraciones <- 500
+
+nbr_Threshold <- 10**(-5)
+
+```
+
+```{r echo=FALSE}
+bGS1 <- funcResolverSE(A1_dom, b1, x0, nbr_MaxIteraciones, nbr_Threshold, str_Metodo)
+```
+Se alcanza el threshold en la 9ª iteración.
+
+
+
+
+## Conclusiones
+
+Luego de las pruebas presentadas en este reporte, concluímos que el método iterativo de Gauss-Seidel fue correctamente implementado, pues:
+
++ Valida las dimensiones de sus input: matriz A, vector b, vector x0.
++ Si la matriz A es singular no continúa el algoritmo.
++ Ordena las filas para buscar eliminar todos los ceros de la diagonal; si después del ordenamiento sigue habiendo ceros en la diagonal, se detiene el algoritmo.
++ Se logran resolver SEL con matrices densas de tamaño $10^2 \times 10^2$ o matrices ralas de $10^3 \times 10^3$.
