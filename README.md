@@ -32,7 +32,7 @@ Las tareas e issues detectados durante el desarrollo del proyecto están organiz
 ## Estructura del repositorio
 
 **Archivos**
-+ Parámetros_modelos: indica los parámetros que los programadores deberían considerar en el desarrollo de los programas. 
++ Parámetros_modelos: es unan nota ráoida que indica los parámetros que los programadores deberían considerar en el desarrollo de los programas. 
 
 
 **Carpetas**
