@@ -1653,60 +1653,13 @@ Y vemos que ahora es medianamente bien condicionada:
 ```{r echo=FALSE}
 cond(A_dom)
 ```
-```{r include=FALSE}
-bGS <- funcResolverSE(A_dom, b, x0, nbr_MaxIteraciones, nbr_Threshold, str_Metodo)
-```
-
-```{r echo=FALSE}
-bGS
+```{r}
+funcResolverSE(A_dom, b, x0, nbr_MaxIteraciones, nbr_Threshold, str_Metodo)
 ```
 
 Se alcanza el threshold en la 8ª iteración.
 
-Comparamos con el resultado del método  ```lsolve.gs```. Recordemos que necesitamos pasarle la matriz ordenada:
 
-```{r echo=FALSE}
-lt_Obj <- funcOrdenarEcuaciones(A_dom, b)
-            A_ord <- lt_Obj$matriz
-            b_ord <- lt_Obj$vector
-```
-
-Ahora probamos el método  ```lsolve.gs``` con la misma tolerancia:
-```{r message=FALSE}
-
-sol.lsolve <- lsolve.gs(A_ord, b_ord, xinit = x0, reltol = nbr_Threshold, 
-                            maxiter = nbr_MaxIteraciones, adjsym = FALSE, verbose = TRUE)
-
-sol.lsolve$x
-
-```
-Y calculamos el error relativo:
-
-```{r echo=FALSE}
-#bGS <- funcResolverSE(A_dom, b, x0, nbr_MaxIteraciones, nbr_Threshold, str_Metodo)
-print('error relativo:')
-err_rel = Norm(sol.lsolve$x-bGS, p = 2)/Norm(bGS)
-print(err_rel)
-```
- Ahora probamos el método  ```lsolve.gs``` disminuyendo la tolerancia:
-```{r message=FALSE}
-
-sol.lsolve <- lsolve.gs(A_ord, b_ord, xinit = x0, reltol = nbr_Threshold/10, 
-                            maxiter = nbr_MaxIteraciones, adjsym = FALSE, verbose = TRUE)
-
-sol.lsolve$x
-
-```
-
-Y calculamos el error relativo:
-
-```{r echo=FALSE}
-print('error relativo:')
-err_rel = Norm(sol.lsolve$x-bGS, p = 2)/Norm(bGS)
-print(err_rel)
-```
-
-Podemos ver que nuestra aproximación es más cercana a este último resultado.
 
 
 ### 10^3
@@ -1733,14 +1686,14 @@ A1 <- as.matrix(A1)
 ```
 
 
-La forzamos a ser dominante esctricta en la diagonal por renglones:
-```{r echo=FALSE}
+La forzamos a ser dominante estricta en la diagonal por renglones:
+```{r}
 A1_dom = max(rowSums(A1))* diag(1000)+A1
 ```
 
 
 Definimos los demás parámetros:
-```{r echo=FALSE}
+```{r}
 b1 <- c(10*rnorm(1000))
 
 mode(b) <- "integer"
@@ -1753,8 +1706,8 @@ nbr_MaxIteraciones <- 500
 nbr_Threshold <- 10**(-5)
 
 ```
-
-```{r echo=FALSE}
+Y aplicamos el método de Gauss Seidel: 
+```{r}
 bGS1 <- funcResolverSE(A1_dom, b1, x0, nbr_MaxIteraciones, nbr_Threshold, str_Metodo)
 ```
 Se alcanza el threshold en la 9ª iteración.
