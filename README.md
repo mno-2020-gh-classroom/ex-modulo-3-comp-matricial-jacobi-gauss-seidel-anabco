@@ -33,6 +33,8 @@ Las tareas e issues detectados durante el desarrollo del proyecto están organiz
 
 **Archivos**
 + Parámetros_modelos: es unan nota ráoida que indica los parámetros que los programadores deberían considerar en el desarrollo de los programas. 
++ Jacobi_GaussSeidel: implementado en R. 
++ Jacobi_GaussSeidel_Bloques.ipynb: desarrollado en R utilizando el binder.
 
 
 **Carpetas**
