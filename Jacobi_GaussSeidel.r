@@ -569,29 +569,29 @@ funcResolverSE <- function(mtrx_A, vct_B, vct_X0, nbr_MaxIteraciones, nbr_Thresh
   # Se inicializa el vector de resultados
   vct_XRslt <- rep(NA, size(vct_X0)[2])
 
-  if(!is.singular.matrix(mtrx_A)){
+  if (funcEsMatrizCuadrada(mtrx_A) == TRUE){
 
-    if (str_Metodo == 'J' || str_Metodo == 'GS'){
+    if(!is.singular.matrix(mtrx_A)){
 
-      if (str_Metodo=='J'){
-        print('Solución mediante metodo de Jacobi')
-      }
-      if (str_Metodo=='GS'){
-        print('Solución mediante metodo de Gauss-Seidel')
-      }
+      if (str_Metodo == 'J' || str_Metodo == 'GS'){
 
-      print('Matriz A:')
-      print(mtrx_A)
+        if (str_Metodo=='J'){
+          print('Solución mediante metodo de Jacobi')
+        }
+        if (str_Metodo=='GS'){
+          print('Solución mediante metodo de Gauss-Seidel')
+        }
 
-      print('Vector b:')
-      print(vct_B)
+        print('Matriz A:')
+        print(mtrx_A)
 
-      # Se aplican las validaciones de manera anidada
-      if (funcEsVectorValido(mtrx_A, vct_B)){
+        print('Vector b:')
+        print(vct_B)
 
-        if (funcEsVectorValido(mtrx_A, vct_X0)){
+        # Se aplican las validaciones de manera anidada
+        if (funcEsVectorValido(mtrx_A, vct_B)){
 
-          if (funcEsMatrizCuadrada(mtrx_A) == TRUE){
+          if (funcEsVectorValido(mtrx_A, vct_X0)){
 
             # Obtenemos la n de la matriz
             n <- nrow(mtrx_A)
@@ -652,20 +652,23 @@ funcResolverSE <- function(mtrx_A, vct_B, vct_X0, nbr_MaxIteraciones, nbr_Thresh
             }
 
           } else {
-              print('La matriz no cumple con ser de dimensiones nxn')
+            print('El vector de aproximaciones no es de las dimensiones esperadas')
           }
+
         } else {
-          print('El vector de aproximaciones no es de las dimensiones esperadas')
+          print('El vector de resultados no es de las dimensiones esperadas')
         }
+
       } else {
-        print('El vector de resultados no es de las dimensiones esperadas')
+        print("El método especificado no es válido, se espera 'GS' para Gauss-Seidel o 'J' para Jacobi")
       }
 
-    }else{
-      print("El método especificado no es válido, se espera 'GS' para Gauss-Seidel o 'J' para Jacobi")
+    } else {
+      print('La matriz es singular, por lo tanto no hay solución al sistema y el método se detiene')
     }
-  }else{
-    print('La matriz es singular, por lo tanto no hay solución al sistema y el método se detiene')
+
+  } else {
+      print('La matriz no cumple con ser de dimensiones nxn')
   }
 
   # Se devuelve el vector de resultados
@@ -720,4 +723,4 @@ str_Metodo <- 'GS'
 ########################## Flujo principal (ejemplo) ##########################
 # Se manda a llamar la función que contiene las validaciones y ejecución
 # del método de Jacobi o Gauss-Seide, según se indique
-# vct_Solucion <- funcResolverSE(mtrx_A, vct_B, vct_X0, nbr_MaxIteraciones, nbr_Threshold, str_Metodo)
+vct_Solucion <- funcResolverSE(mtrx_A, vct_B, vct_X0, nbr_MaxIteraciones, nbr_Threshold, str_Metodo)
