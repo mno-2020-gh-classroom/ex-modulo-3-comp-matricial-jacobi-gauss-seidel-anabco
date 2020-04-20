@@ -886,3 +886,11 @@ También podemos compararlo con el método de Jacobi.
 jacobi <- funcResolverSE(Ad, b, x0, nbr_MaxIteraciones, nbr_Threshold, str_Metodo)
 ```
 
+## Conclusiones
+
+Posterior a las pruebas realizadas con las matrices que se utilizaron podemos ver que al igual que el método de Jacobi y en el de Gauss-Seidel:
+
++ Valida las dimensiones de sus input: matriz A, vector b, vector x0.
++ Si la matriz A es singular no continúa el algoritmo.
+
+Por otro lado, se pudo comparar que se obtienen resultados similares a los de Jacobi. Es además necesario que cumpla la condición de convergencia para que tenga sentido usar la matriz.
