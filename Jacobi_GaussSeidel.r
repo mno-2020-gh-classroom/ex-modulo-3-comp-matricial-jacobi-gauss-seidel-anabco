@@ -717,8 +717,7 @@ nbr_Threshold <- 10**(-3)
 #str_Metodo <- 'J'
 str_Metodo <- 'GS'
 
-########################## Flujo principal ##########################
-
+########################## Flujo principal (ejemplo) ##########################
 # Se manda a llamar la función que contiene las validaciones y ejecución
 # del método de Jacobi o Gauss-Seide, según se indique
-vct_Solucion <- funcResolverSE(mtrx_A, vct_B, vct_X0, nbr_MaxIteraciones, nbr_Threshold, str_Metodo)
+# vct_Solucion <- funcResolverSE(mtrx_A, vct_B, vct_X0, nbr_MaxIteraciones, nbr_Threshold, str_Metodo)
